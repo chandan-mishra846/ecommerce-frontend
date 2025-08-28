@@ -6,8 +6,8 @@ import Footer from '../components/Footer';
 import Rating from '../components/Rating';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { getProductDetails, removeErrors, createReviewforProduct } from '../features/products/productSlice';
-import { addToCart, removeSuccess, addToCartAPI } from '../features/products/user/userSlice';
+import { getProductDetails, removeErrors as removeProductErrors, createReviewforProduct } from '../features/products/productSlice';
+import { addToCartAPI, fetchCart, removeErrors as removeUserErrors } from '../features/user/userSlice';
 import { toast } from 'react-toastify';
 
 function ProductDetails() {
@@ -19,24 +19,26 @@ function ProductDetails() {
   const { id } = useParams();
 
   const { loading, error, product } = useSelector((state) => state.product);
-  const { loading: cartLoading, error: cartError, success, message, isAuthenticated, user } = useSelector(
+  const { loading: cartLoading, error: cartError, isAuthenticated, user, cart: userCart } = useSelector(
     (state) => state.user
   );
+
+  const [isFetchingCart, setIsFetchingCart] = useState(false); // Local state to manage if cart is currently being fetched
 
   // fetch product details
   useEffect(() => {
     if (id) dispatch(getProductDetails(id));
-    return () => dispatch(removeErrors());
+    return () => dispatch(removeProductErrors());
   }, [dispatch, id]);
 
-  // handle errors + success
+  // Handle product-related errors
   useEffect(() => {
     if (error) {
       toast.error(error.message || 'Something went wrong!', {
         position: 'top-center',
         autoClose: 3000,
       });
-      dispatch(removeErrors());
+      dispatch(removeProductErrors());
     }
   }, [dispatch, error]);
 
@@ -48,9 +50,18 @@ function ProductDetails() {
         position: 'top-center',
         autoClose: 3000,
       });
-      setReviewSubmitted(false); // Reset the flag
+      setReviewSubmitted(false);
     }
   }, [product, reviewSubmitted]);
+
+  // Effect to fetch cart if authenticated and not already fetching
+  useEffect(() => {
+    if (isAuthenticated && !isFetchingCart) {
+      setIsFetchingCart(true);
+      dispatch(fetchCart())
+        .finally(() => setIsFetchingCart(false));
+    }
+  }, [dispatch, isAuthenticated]);
 
   const handleRatingChange = (newRating) => {
     console.log('Rating change called with:', newRating);
@@ -73,10 +84,13 @@ function ProductDetails() {
 
   const decreaseQuantity = () => {
     if (quantity <= 1) {
-      toast.error('Quantity cannot be less than one', { position: 'top-center', autoClose: 3000 });
+      toast.error('Quantity cannot be less than one', { 
+        position: 'top-center', 
+        autoClose: 3000 
+      });
       return;
     }
-    setQuantity((quantity) => quantity - 1);
+    setQuantity((prevQuantity) => prevQuantity - 1);
   };
 
   const increaseQuantity = () => {
@@ -84,22 +98,50 @@ function ProductDetails() {
       toast.error('Cannot exceed available stock', { position: 'top-center', autoClose: 3000 });
       return;
     }
-    setQuantity((quantity) => quantity + 1);
+    setQuantity((prevQuantity) => prevQuantity + 1);
   };
 
   const handleAddToCart = () => {
-    if (isAuthenticated) {
-      dispatch(addToCartAPI({ productId: product._id, quantity }));
-      toast.success('Product added to cart successfully!', {
-        position: 'top-center',
-        autoClose: 3000,
-      });
-    } else {
+    if (!isAuthenticated) {
       toast.error('Please login to add items to cart', {
         position: 'top-center',
         autoClose: 3000,
       });
+      return;
     }
+
+    if (product.stock <= 0) {
+      toast.error('Sorry, product is out of stock!', {
+        position: 'top-center',
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    if (quantity > product.stock) {
+      toast.error(`Only ${product.stock} units available!`, {
+        position: 'top-center',
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    dispatch(addToCartAPI({ productId: product._id, quantity }))
+      .unwrap()
+      .then(() => {
+        toast.success('Product added to cart successfully!', {
+          position: 'top-center',
+          autoClose: 3000,
+        });
+        dispatch(fetchCart()); // Refetch cart to update global state and UI
+      })
+      .catch((error) => {
+        toast.error(error?.message || 'Failed to add to cart', {
+          position: 'top-center',
+          autoClose: 3000,
+        });
+        dispatch(removeUserErrors()); // Clear user/cart errors after showing toast
+      });
   };
 
   const handleSubmitReview = (e) => {
@@ -141,7 +183,7 @@ function ProductDetails() {
     };
     
     console.log('Submitting review data:', reviewData);
-    setReviewSubmitted(true); // Set flag before dispatching
+    setReviewSubmitted(true);
     dispatch(createReviewforProduct(reviewData));
     
     // Reset form
@@ -162,8 +204,10 @@ function ProductDetails() {
               alt={product.name}
               className="product-detail-image"
               onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = '/images/default.jpg';
+                // Updated default image path to include 'variations'
+                if (e.target.src.indexOf('/images/products/variations/adults-plain-cotton-tshirt-2-pack-black.jpg') === -1) {
+                  e.target.src = '/images/products/variations/adults-plain-cotton-tshirt-2-pack-black.jpg';
+                }
               }}
             />
           </div>
@@ -197,8 +241,12 @@ function ProductDetails() {
               </button>
             </div>
 
-            <button className="add-to-cart-btn" onClick={handleAddToCart}>
-              {cartLoading ? 'Adding...' : 'Add to Cart'}
+            <button 
+              className="add-to-cart-btn" 
+              onClick={handleAddToCart}
+              disabled={product.stock <= 0 || cartLoading}
+            >
+              {cartLoading ? 'Adding...' : product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
             </button>
 
             <form onSubmit={handleSubmitReview} className="review-form">

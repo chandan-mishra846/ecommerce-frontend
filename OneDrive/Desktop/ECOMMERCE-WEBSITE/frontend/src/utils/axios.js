@@ -1,13 +1,36 @@
 import axios from 'axios';
 
-// Set base URL for all API calls
-axios.defaults.baseURL = 'http://localhost:8000';
+const instance = axios.create({
+    // We don't need baseURL because we're using Vite's proxy
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json'
+    }
+});
 
-// Allow cookies to be sent with requests (for authentication)
-axios.defaults.withCredentials = true;
+// Add a request interceptor
+instance.interceptors.request.use(
+    (config) => {
+        // For multipart/form-data, let the browser set the Content-Type
+        if (config.data instanceof FormData) {
+            delete config.headers['Content-Type'];
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
-// Set default headers
-axios.defaults.headers.common['Content-Type'] = 'application/json';
+// Add a response interceptor
+instance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        // Handle errors
+        const message = error.response?.data?.message || error.message;
+        return Promise.reject({ message });
+    }
+);
 
-export default axios;
+export default instance;
 

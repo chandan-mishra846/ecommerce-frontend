@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { ToastContainer } from 'react-toastify'; // Import ToastContainer
+import 'react-toastify/dist/ReactToastify.css'; // Import toastify CSS
 
 import Home from './pages/Home';
 import ProductDetails from './pages/ProductDetails';
@@ -11,13 +13,13 @@ import UserDashboard from './User/UserDashboard';
 import Login from './User/Login';
 import Profile from './User/Profile';
 
-import { loadUser } from './features/products/user/userSlice';
+// Corrected import path for loadUser
+import { loadUser } from './features/user/userSlice'; 
 import ProtectedRoute from './components/ProtectedRoute';
 import UpdatePassword from './User/UpdatePassword';
-import ForgotPassword from './User/forgotPassword';
-import ResetPassword from './User/resetPassword';
+import ForgotPassword from './User/forgotPassword'; // Corrected capitalization
+import ResetPassword from './User/resetPassword'; // Corrected capitalization
 import Cart from './pages/Cart';
-
 
 
 function App() {
@@ -61,7 +63,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-       
+        
         <Route path="/password/forgot" element={<ForgotPassword />} />
         <Route path="/reset/:token" element={<ResetPassword/>} />
         <Route path="/cart" element={<Cart />} />
@@ -70,6 +72,19 @@ function App() {
       </Routes>
 
       {isAuthenticated && <UserDashboard user={user} />}
+
+      {/* ✅ Add ToastContainer here, once at the root of your app */}
+      <ToastContainer 
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </Router>
   );
 }

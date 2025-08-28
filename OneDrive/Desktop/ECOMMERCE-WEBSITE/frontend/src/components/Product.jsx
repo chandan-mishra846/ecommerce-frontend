@@ -30,7 +30,7 @@ function Product({ product }) {
             />
           </div>
           <span className='productCardSpan'>
-             ({product.numberOfReviews}  {product.numberOfReviews===1?"Review":"Reviews"})
+              ({product.numberOfReviews}  {product.numberOfReviews===1?"Review":"Reviews"})
           </span>
 
           <button className="add-to-cart">View Details</button>

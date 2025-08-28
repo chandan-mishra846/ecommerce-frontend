@@ -1,15 +1,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axios from "../../utils/axios";  // Using configured axios instance
 
 // Async Thunk for adding items
 export const addItemsToCart = createAsyncThunk(
   "cart/addItemToCart",
   async ({ id, quantity }, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get(`/api/v1/product/${id}`);
+      const { data } = await axios.get(`/api/v1/products/${id}`);  // Fixed endpoint URL
 
       return {
-        product: data.product._id, // backend se _id aata hai
+        product: data.product._id,
         name: data.product.name,
         price: data.product.price,
         image: data.product.image[0]?.url || "",
@@ -18,7 +18,9 @@ export const addItemsToCart = createAsyncThunk(
       };
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "An error occurred"
+        error.response?.data?.message || 
+        error.message || 
+        "Failed to add item to cart"
       );
     }
   }
