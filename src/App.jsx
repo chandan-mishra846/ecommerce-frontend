@@ -16,10 +16,17 @@ import Profile from './User/Profile';
 import SellerDashboard from './pages/SellerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import SellerProfile from './pages/SellerProfile';
+import AddProduct from './pages/AddProduct';
+import SellerProducts from './pages/SellerProducts';
+import OutOfStockProducts from './pages/OutOfStockProducts';
+import AllOrders from './pages/AllOrders';
+import OrderHistory from './pages/OrderHistory';
+import TotalProfit from './pages/TotalProfit';
 
 // Corrected import path for loadUser
 import { loadUser } from './features/user/userSlice'; 
 import ProtectedRoute from './components/ProtectedRoute';
+import NavbarSelector from './components/NavbarSelector';
 import UpdatePassword from './User/UpdatePassword';
 import ForgotPassword from './User/forgotPassword'; // Corrected capitalization
 import ResetPassword from './User/resetPassword'; // Corrected capitalization
@@ -36,6 +43,8 @@ function App() {
 
   return (
     <Router>
+      <NavbarSelector />
+      
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/product/:id" element={<ProductDetails />} />
@@ -87,6 +96,54 @@ function App() {
           element={
             <ProtectedRoute requiredRole="seller">
               <SellerProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seller/products/create"
+          element={
+            <ProtectedRoute requiredRole="seller">
+              <AddProduct />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seller/products"
+          element={
+            <ProtectedRoute requiredRole="seller">
+              <SellerProducts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seller/products/out-of-stock"
+          element={
+            <ProtectedRoute requiredRole="seller">
+              <OutOfStockProducts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seller/orders"
+          element={
+            <ProtectedRoute requiredRole="seller">
+              <AllOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seller/orders/history"
+          element={
+            <ProtectedRoute requiredRole="seller">
+              <OrderHistory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seller/profit"
+          element={
+            <ProtectedRoute requiredRole="seller">
+              <TotalProfit />
             </ProtectedRoute>
           }
         />

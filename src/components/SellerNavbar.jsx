@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../features/user/userSlice';
@@ -26,10 +26,40 @@ function SellerNavbar() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
   const handleLogout = () => {
     dispatch(logout());
     navigate('/');
+    closeSidebar();
   };
+
+  // Handle escape key to close sidebar
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isSidebarOpen) {
+        closeSidebar();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isSidebarOpen]);
+
+  // Prevent body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (isSidebarOpen && window.innerWidth < 1024) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isSidebarOpen]);
 
   return (
     <>
@@ -61,7 +91,7 @@ function SellerNavbar() {
         <div className="sidebar-menu">
           <div className="menu-section">
             <h4>Overview</h4>
-            <Link to="/seller/dashboard" className="menu-item" onClick={() => setIsSidebarOpen(false)}>
+            <Link to="/seller/dashboard" className="menu-item" onClick={closeSidebar}>
               <DashboardIcon className="menu-icon" />
               <span>Dashboard</span>
             </Link>
@@ -69,15 +99,15 @@ function SellerNavbar() {
 
           <div className="menu-section">
             <h4>Products</h4>
-            <Link to="/seller/products" className="menu-item" onClick={() => setIsSidebarOpen(false)}>
+            <Link to="/seller/products" className="menu-item" onClick={closeSidebar}>
               <InventoryIcon className="menu-icon" />
               <span>My Products</span>
             </Link>
-            <Link to="/seller/products/out-of-stock" className="menu-item" onClick={() => setIsSidebarOpen(false)}>
+            <Link to="/seller/products/out-of-stock" className="menu-item" onClick={closeSidebar}>
               <WarningIcon className="menu-icon" />
               <span>Out of Stock</span>
             </Link>
-            <Link to="/seller/products/create" className="menu-item" onClick={() => setIsSidebarOpen(false)}>
+            <Link to="/seller/products/create" className="menu-item" onClick={closeSidebar}>
               <InventoryIcon className="menu-icon" />
               <span>Add Product</span>
             </Link>
@@ -85,11 +115,11 @@ function SellerNavbar() {
 
           <div className="menu-section">
             <h4>Orders</h4>
-            <Link to="/seller/orders" className="menu-item" onClick={() => setIsSidebarOpen(false)}>
+            <Link to="/seller/orders" className="menu-item" onClick={closeSidebar}>
               <ShoppingCartIcon className="menu-icon" />
               <span>All Orders</span>
             </Link>
-            <Link to="/seller/orders/history" className="menu-item" onClick={() => setIsSidebarOpen(false)}>
+            <Link to="/seller/orders/history" className="menu-item" onClick={closeSidebar}>
               <HistoryIcon className="menu-icon" />
               <span>Order History</span>
             </Link>
@@ -97,7 +127,7 @@ function SellerNavbar() {
 
           <div className="menu-section">
             <h4>Analytics</h4>
-            <Link to="/seller/profits" className="menu-item" onClick={() => setIsSidebarOpen(false)}>
+            <Link to="/seller/profit" className="menu-item" onClick={closeSidebar}>
               <AttachMoneyIcon className="menu-icon" />
               <span>Total Profit</span>
             </Link>
@@ -105,7 +135,7 @@ function SellerNavbar() {
 
           <div className="menu-section">
             <h4>Account</h4>
-            <Link to="/seller/profile" className="menu-item" onClick={() => setIsSidebarOpen(false)}>
+            <Link to="/seller/profile" className="menu-item" onClick={closeSidebar}>
               <PersonIcon className="menu-icon" />
               <span>Profile</span>
             </Link>
@@ -117,7 +147,20 @@ function SellerNavbar() {
         </div>
       </div>
 
-      {isSidebarOpen && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
+      {isSidebarOpen && (
+        <div 
+          className={`sidebar-overlay ${isSidebarOpen ? 'show' : ''}`} 
+          onClick={closeSidebar}
+          role="button"
+          aria-label="Close sidebar"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              closeSidebar();
+            }
+          }}
+        />
+      )}
     </>
   );
 }

@@ -24,7 +24,12 @@ function Login() {
         return;
       }
       // Send admin login request
-      dispatch(login({ email: loginEmail, password: loginPassword, adminLogin: true }));
+      dispatch(login({ 
+        email: loginEmail, 
+        password: loginPassword, 
+        adminLogin: true,
+        adminAccessCode: adminCode
+      }));
     } else {
       // Regular user/seller login
       dispatch(login({ email: loginEmail, password: loginPassword }));

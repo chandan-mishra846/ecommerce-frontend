@@ -1,8 +1,10 @@
 /* Seller Registration Styles */
 .seller-register-form {
-  max-width: 800px !important;
+  max-width: 900px !important;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-section {
@@ -12,6 +14,8 @@
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-section h3 {
@@ -25,19 +29,23 @@
 
 .input-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
   margin-bottom: 1rem;
+  width: 100%;
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
   margin-bottom: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .input-group.full-width {
   grid-column: 1 / -1;
+  width: 100%;
 }
 
 .input-group label {
@@ -55,6 +63,8 @@
   font-size: 0.9rem;
   transition: all 0.3s ease;
   background: white;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .input-group input:focus,
@@ -68,10 +78,12 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .avatar-upload .file-input {
   flex: 1;
+  min-width: 200px;
 }
 
 .avatar-upload .avatar {
@@ -80,6 +92,7 @@
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #ddd;
+  flex-shrink: 0;
 }
 
 .file-input {
@@ -89,6 +102,8 @@
   background: #f8f9fa;
   cursor: pointer;
   transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .file-input:hover {
@@ -108,6 +123,7 @@
   transition: all 0.3s ease;
   width: 100%;
   margin-top: 1rem;
+  box-sizing: border-box;
 }
 
 .authBtn:hover:not(:disabled) {
@@ -138,16 +154,30 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .seller-register-form {
     max-width: 100% !important;
     padding: 1rem;
-    margin: 0.5rem;
+    margin: 0;
+  }
+
+  .input-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .seller-register-form {
+    max-width: 100% !important;
+    padding: 0.75rem;
+    margin: 0;
   }
 
   .form-section {
     padding: 1rem;
     margin-bottom: 1rem;
+    border-radius: 8px;
   }
 
   .input-row {
@@ -162,22 +192,34 @@
   .avatar-upload {
     flex-direction: column;
     align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .avatar-upload .file-input {
+    min-width: 100%;
   }
 
   .avatar-upload .avatar {
     width: 50px;
     height: 50px;
   }
+
+  .authBtn {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.95rem;
+  }
 }
 
 @media (max-width: 480px) {
   .seller-register-form {
     padding: 0.5rem;
+    margin: 0;
   }
 
   .form-section {
     padding: 0.75rem;
-    border-radius: 8px;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
   }
 
   .form-section h3 {
@@ -195,23 +237,53 @@
   }
 
   .authBtn {
-    padding: 0.8rem 1.5rem;
+    padding: 0.8rem 1.2rem;
     font-size: 0.9rem;
+  }
+
+  .avatar-upload .avatar {
+    width: 45px;
+    height: 45px;
+  }
+}
+
+@media (max-width: 360px) {
+  .seller-register-form {
+    padding: 0.25rem;
+  }
+
+  .form-section {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .input-group input,
+  .input-group select {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .authBtn {
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
   }
 }
 
 /* Form Container Responsive Updates */
 .form-container {
-  padding: 1rem;
+  padding: 0.5rem;
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-content {
   width: 100%;
   max-width: 900px;
+  box-sizing: border-box;
 }
 
 /* Enhanced styling for seller forms */
@@ -252,6 +324,10 @@
   border: 2px dashed #bdc3c7;
   text-align: center;
   color: #7f8c8d;
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .file-input[type="file"]::-webkit-file-upload-button {
@@ -261,9 +337,32 @@
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
-  margin-right: 1rem;
+  margin-right: 0.5rem;
+  font-size: 0.85rem;
 }
 
 .file-input[type="file"]::-webkit-file-upload-button:hover {
   background: #2980b9;
+}
+
+/* Ensure all inputs are responsive */
+input, select, textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Mobile landscape orientation */
+@media (max-width: 768px) and (orientation: landscape) {
+  .form-container {
+    align-items: flex-start;
+    padding-top: 1rem;
+  }
+
+  .seller-register-form {
+    padding: 0.5rem;
+  }
+
+  .form-section {
+    padding: 0.75rem;
+  }
 }

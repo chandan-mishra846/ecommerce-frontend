@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSellerStats, clearErrors } from '../features/seller/sellerSlice';
 import { toast } from 'react-toastify';
-import SellerNavbar from '../components/SellerNavbar';
+import { Link } from 'react-router-dom';
 import Loader from '../components/Loader';
 import '../pageStyles/SellerDashboard.css';
 
@@ -79,68 +79,65 @@ function SellerDashboard() {
   ];
 
   return (
-    <div>
-      <SellerNavbar />
-      <div className="seller-content">
-        <div className="seller-dashboard">
-          <div className="dashboard-header">
-            <h1>Seller Dashboard</h1>
-            <p>Welcome to your seller portal. Here's an overview of your business.</p>
-          </div>
+    <div className="seller-content">
+      <div className="seller-dashboard">
+        <div className="dashboard-header">
+          <h1>Seller Dashboard</h1>
+          <p>Welcome to your seller portal. Here's an overview of your business.</p>
+        </div>
 
-          <div className="stats-grid">
-            {statsCards.map((card, index) => (
-              <div key={index} className="stat-card">
-                <div className="stat-icon" style={{ color: card.color, backgroundColor: card.bgColor }}>
-                  {card.icon}
-                </div>
-                <div className="stat-content">
-                  <h3>{card.value}</h3>
-                  <p>{card.title}</p>
-                </div>
+        <div className="stats-grid">
+          {statsCards.map((card, index) => (
+            <div key={index} className="stat-card">
+              <div className="stat-icon" style={{ color: card.color, backgroundColor: card.bgColor }}>
+                {card.icon}
               </div>
-            ))}
-          </div>
-
-          <div className="dashboard-actions">
-            <div className="action-card">
-              <h3>Quick Actions</h3>
-              <div className="action-buttons">
-                <button className="action-btn primary">Add New Product</button>
-                <button className="action-btn secondary">View All Orders</button>
-                <button className="action-btn tertiary">Check Inventory</button>
+              <div className="stat-content">
+                <h3>{card.value}</h3>
+                <p>{card.title}</p>
               </div>
             </div>
+          ))}
+        </div>
 
-            <div className="recent-activity">
-              <h3>Recent Activity</h3>
-              <div className="activity-list">
-                <div className="activity-item">
-                  <div className="activity-icon">
-                    <ShoppingCartIcon />
-                  </div>
-                  <div className="activity-content">
-                    <p>New order received</p>
-                    <span>2 hours ago</span>
-                  </div>
+        <div className="dashboard-actions">
+          <div className="action-card">
+            <h3>Quick Actions</h3>
+            <div className="action-buttons">
+              <Link to="/seller/products/create" className="action-btn primary">Add New Product</Link>
+              <Link to="/seller/orders" className="action-btn secondary">View All Orders</Link>
+              <Link to="/seller/products" className="action-btn tertiary">Check Inventory</Link>
+            </div>
+          </div>
+
+          <div className="recent-activity">
+            <h3>Recent Activity</h3>
+            <div className="activity-list">
+              <div className="activity-item">
+                <div className="activity-icon">
+                  <ShoppingCartIcon />
                 </div>
-                <div className="activity-item">
-                  <div className="activity-icon">
-                    <InventoryIcon />
-                  </div>
-                  <div className="activity-content">
-                    <p>Product stock updated</p>
-                    <span>1 day ago</span>
-                  </div>
+                <div className="activity-content">
+                  <p>New order received</p>
+                  <span>2 hours ago</span>
                 </div>
-                <div className="activity-item">
-                  <div className="activity-icon">
-                    <TrendingUpIcon />
-                  </div>
-                  <div className="activity-content">
-                    <p>Revenue increased by 15%</p>
-                    <span>3 days ago</span>
-                  </div>
+              </div>
+              <div className="activity-item">
+                <div className="activity-icon">
+                  <InventoryIcon />
+                </div>
+                <div className="activity-content">
+                  <p>Product stock updated</p>
+                  <span>1 day ago</span>
+                </div>
+              </div>
+              <div className="activity-item">
+                <div className="activity-icon">
+                  <TrendingUpIcon />
+                </div>
+                <div className="activity-content">
+                  <p>Revenue increased by 15%</p>
+                  <span>3 days ago</span>
                 </div>
               </div>
             </div>

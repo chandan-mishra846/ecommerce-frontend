@@ -1,8 +1,17 @@
-/* Seller Dashboard Styles */
+/* Seller Dashboard Styles - Mobile First Responsive */
+.seller-content {
+  margin-top: 60px;
+  padding: 0;
+  min-height: calc(100vh - 60px);
+}
+
 .seller-dashboard {
-  padding: 2rem;
+  padding: 1rem;
   max-width: 1400px;
   margin: 0 auto;
+  min-height: calc(100vh - 60px);
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
 }
 
 .dashboard-header {
@@ -108,6 +117,8 @@
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: left;
+  text-decoration: none;
+  display: block;
 }
 
 .action-btn.primary {
@@ -214,6 +225,27 @@
   
   .stat-content h3 {
     font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 576px) {
+  .seller-dashboard {
+    padding: 1.5rem;
+    min-height: calc(100vh - 65px);
+  }
+}
+
+@media (min-width: 768px) {
+  .seller-dashboard {
+    padding: 2rem;
+    min-height: calc(100vh - 70px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .seller-dashboard {
+    margin-left: 300px;
+    padding: 2.5rem;
   }
 }
 
