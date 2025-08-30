@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import AdminNavbar from '../components/AdminNavbar';
 import '../AdminStyles/AdminProducts.css';
 import '../AdminStyles/ProductsList.css';
+
+// Import Redux actions
+import { getAdminProducts, removeErrors } from '../features/products/productSlice';
 
 // Import Material UI icons
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -12,86 +17,24 @@ import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 
-// This would normally come from a Redux slice
-// Replace with actual API call implementation
-const fetchProducts = () => {
-  // Mock data for demonstration
-  return [
-    {
-      _id: '1',
-      name: 'Wireless Headphones',
-      price: 99.99,
-      category: 'Electronics',
-      stock: 50,
-      seller: 'TechStore',
-      ratings: 4.5,
-      numOfReviews: 120,
-      images: [{ url: '/public/images/products/headphones.jpg' }],
-      createdAt: '2023-05-15T10:30:00Z'
-    },
-    {
-      _id: '2',
-      name: 'Running Shoes',
-      price: 79.99,
-      category: 'Sports',
-      stock: 35,
-      seller: 'SportyGear',
-      ratings: 4.2,
-      numOfReviews: 85,
-      images: [{ url: '/public/images/products/shoes.jpg' }],
-      createdAt: '2023-06-20T14:45:00Z'
-    },
-    {
-      _id: '3',
-      name: 'Coffee Maker',
-      price: 149.99,
-      category: 'Home Appliances',
-      stock: 20,
-      seller: 'HomeEssentials',
-      ratings: 4.8,
-      numOfReviews: 200,
-      images: [{ url: '/public/images/products/coffee-maker.jpg' }],
-      createdAt: '2023-04-10T09:15:00Z'
-    },
-    {
-      _id: '4',
-      name: 'Laptop Backpack',
-      price: 59.99,
-      category: 'Fashion',
-      stock: 100,
-      seller: 'BagWorld',
-      ratings: 4.0,
-      numOfReviews: 150,
-      images: [{ url: '/public/images/products/backpack.jpg' }],
-      createdAt: '2023-07-05T11:20:00Z'
-    },
-  ];
-};
-
 function AdminProducts() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { adminProducts, loading, error } = useSelector(state => state.product);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   
   useEffect(() => {
-    // In a real app, this would dispatch an action to fetch products
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        // Replace with actual API call
-        const productData = fetchProducts();
-        setProducts(productData);
-      } catch (error) {
-        console.error('Failed to fetch products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadProducts();
-  }, []);
+    dispatch(getAdminProducts());
+  }, [dispatch]);
+  
+  useEffect(() => {
+    if (error) {
+      console.error('Admin Products Error:', error);
+      toast.error(error);
+      dispatch(removeErrors());
+    }
+  }, [error, dispatch]);
 
   const handleDeleteProduct = async (productId) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
@@ -108,19 +51,22 @@ function AdminProducts() {
   };
 
   const getUniqueCategories = () => {
-    const categories = products.map(product => product.category);
+    if (!adminProducts) return ['all'];
+    const categories = adminProducts.map(product => product.category);
     return ['all', ...new Set(categories)];
   };
 
   // Filter and sort products
   const getFilteredProducts = () => {
-    let filtered = [...products];
+    if (!adminProducts) return [];
+    let filtered = [...adminProducts];
     
     // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter(product => 
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.seller.toLowerCase().includes(searchTerm.toLowerCase())
+        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.seller && product.seller.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (product.user && product.user.name && product.user.name.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     
@@ -182,8 +128,8 @@ function AdminProducts() {
         <div className="admin-products-container">
           <div className="admin-page-header">
             <div>
-              <h1>Product Management</h1>
-              <p>View, edit, and manage all products in the system</p>
+              <h1>View All Products</h1>
+              <p>View all products from database with categories</p>
             </div>
             <Link to="/admin/products/create" className="add-product-btn">
               <AddCircleIcon /> Add New Product
@@ -193,15 +139,15 @@ function AdminProducts() {
           <div className="product-stats">
             <div className="stat-card">
               <h3>Total Products</h3>
-              <p>{products.length}</p>
+              <p>{adminProducts ? adminProducts.length : 0}</p>
             </div>
             <div className="stat-card">
               <h3>Out of Stock</h3>
-              <p>{products.filter(product => product.stock === 0).length}</p>
+              <p>{adminProducts ? adminProducts.filter(product => product.stock === 0).length : 0}</p>
             </div>
             <div className="stat-card">
               <h3>Low Stock</h3>
-              <p>{products.filter(product => product.stock > 0 && product.stock < 10).length}</p>
+              <p>{adminProducts ? adminProducts.filter(product => product.stock > 0 && product.stock < 10).length : 0}</p>
             </div>
           </div>
 
@@ -251,10 +197,15 @@ function AdminProducts() {
             </div>
           </div>
 
-          {loading ? (
+          {loading || !adminProducts ? (
             <div className="loading-container">
               <div className="spinner"></div>
               <p>Loading products...</p>
+              {error && <p style={{color: 'red'}}>Error: {error}</p>}
+            </div>
+          ) : adminProducts.length === 0 ? (
+            <div className="no-products">
+              <p>No products found in the database.</p>
             </div>
           ) : (
             <div className="products-table-container">
@@ -277,9 +228,18 @@ function AdminProducts() {
                       <tr key={product._id}>
                         <td className="product-info">
                           <img 
-                            src={product.images[0]?.url || '/public/vite.svg'} 
+                            src={
+                              (product.images && product.images.length > 0)
+                                ? (product.images[0].url || product.images[0])
+                                : (product.image && product.image.length > 0)
+                                ? (product.image[0].url || product.image[0])
+                                : '/images/products/backpack.jpg'
+                            }
                             alt={product.name} 
-                            className="product-thumbnail" 
+                            className="product-thumbnail"
+                            onError={(e) => {
+                              e.target.src = '/images/products/backpack.jpg';
+                            }}
                           />
                           <span>{product.name}</span>
                         </td>
@@ -288,10 +248,10 @@ function AdminProducts() {
                         <td className={`stock ${product.stock === 0 ? 'out-of-stock' : product.stock < 10 ? 'low-stock' : ''}`}>
                           {product.stock}
                         </td>
-                        <td>{product.seller}</td>
+                        <td>{product.seller || (product.user ? product.user.name : 'Unknown')}</td>
                         <td className="rating">
-                          <span className="rating-value">{product.ratings.toFixed(1)}</span>
-                          <span className="review-count">({product.numOfReviews} reviews)</span>
+                          <span className="rating-value">{product.ratings ? product.ratings.toFixed(1) : '0.0'}</span>
+                          <span className="review-count">({product.numOfReviews || 0} reviews)</span>
                         </td>
                         <td>{formatDate(product.createdAt)}</td>
                         <td className="actions">

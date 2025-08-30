@@ -50,21 +50,28 @@ function Home() {
           <ImageSlider />
           <div className="home-container">
             <h2 className="home-heading">Trending Now</h2>
-            <div className="home-product-container">
-              {products &&
-                products.map((product, index) => (
-                  <Product product={product} key={index} />
-                ))}
-            </div>
+            <p className="home-subheading">Fresh picks curated for you. Discover the latest and greatest.</p>
 
-            {/* Wrap pagination in a centered wrapper */}
+            {products && products.length > 0 ? (
+              <div className="home-product-container">
+                {products.map((product) => (
+                  <Product product={product} key={product._id} />
+                ))}
+              </div>
+            ) : (
+              <div className="no-products-message">
+                <h3>No products to show</h3>
+                <p>Please check back later or adjust your filters.</p>
+              </div>
+            )}
+
+            {/* pagination */}
             <div className="pagination-wrapper">
-              {/* Only render pagination if there are products and more than one page */}
-              {products.length > 0 && totalPages > 1 && (
+              {products && products.length > 0 && totalPages > 1 && (
                 <Pagination
                   currentPage={currentPage}
                   onPageChange={setCurrentPage}
-                  totalPages={totalPages} // Pass totalPages to Pagination
+                  totalPages={totalPages}
                 />
               )}
             </div>

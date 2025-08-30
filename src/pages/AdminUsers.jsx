@@ -8,7 +8,7 @@ import '../AdminStyles/UsersList.css';
 
 // Import Redux actions
 import { 
-  getAllUsers, 
+  getUsersOnly, 
   deleteUser, 
   updateUserRole,
   clearErrors,
@@ -23,12 +23,11 @@ import SearchIcon from '@mui/icons-material/Search';
 
 function AdminUsers() {
   const dispatch = useDispatch();
-  const { users, loading, error, isDeleted } = useSelector(state => state.adminUsers);
+  const { usersOnly, loading, error, isDeleted } = useSelector(state => state.adminUsers);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('all');
   
   useEffect(() => {
-    dispatch(getAllUsers());
+    dispatch(getUsersOnly());
   }, [dispatch]);
   
   useEffect(() => {
@@ -55,12 +54,11 @@ function AdminUsers() {
     }
   };
 
-  const filteredUsers = users && users.length > 0 ? users.filter(user => {
+  const filteredUsers = usersOnly && usersOnly.length > 0 ? usersOnly.filter(user => {
     const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          user.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === 'all' || user.role === filterRole;
     
-    return matchesSearch && matchesRole;
+    return matchesSearch;
   }) : [];
 
   const formatDate = (dateString) => {
@@ -71,18 +69,14 @@ function AdminUsers() {
     });
   };
 
-  const countUsersByRole = (role) => {
-    return users && users.length > 0 ? users.filter(user => user.role === role).length : 0;
-  };
-
   return (
     <div>
       <AdminNavbar />
       <div className="admin-content">
         <div className="admin-users-container">
           <div className="admin-page-header">
-            <h1>User Management</h1>
-            <p>View, edit, and manage all users in the system</p>
+            <h1>Manage Users</h1>
+            <p>View and manage users with role 'User' only</p>
           </div>
 
           <div className="admin-filters">
@@ -95,33 +89,12 @@ function AdminUsers() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            
-            <div className="role-filter">
-              <label>Filter by Role:</label>
-              <select
-                value={filterRole}
-                onChange={(e) => setFilterRole(e.target.value)}
-              >
-                <option value="all">All Roles</option>
-                <option value="user">User</option>
-                <option value="seller">Seller</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
           </div>
 
           <div className="users-stats">
             <div className="stat-card">
               <h3>Total Users</h3>
-              <p>{countUsersByRole('user')}</p>
-            </div>
-            <div className="stat-card">
-              <h3>Total Sellers</h3>
-              <p>{countUsersByRole('seller')}</p>
-            </div>
-            <div className="stat-card">
-              <h3>Total Admins</h3>
-              <p>{countUsersByRole('admin')}</p>
+              <p>{usersOnly ? usersOnly.length : 0}</p>
             </div>
           </div>
 

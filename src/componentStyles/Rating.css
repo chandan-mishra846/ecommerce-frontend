@@ -1,9 +1,19 @@
 
+.rating {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  flex-wrap: nowrap;
+}
+
   .star {
     font-size: 1.5rem;
     cursor: pointer;
     transition: color 0.3s ease, transform 0.3s ease;
     color: var(--text-secondary);
+    display: inline-block;
   }
   
   .star.filled {

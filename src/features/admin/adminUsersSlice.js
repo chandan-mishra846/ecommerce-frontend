@@ -20,6 +20,40 @@ export const getAllUsers = createAsyncThunk(
   }
 );
 
+// Get users with role 'user' only
+export const getUsersOnly = createAsyncThunk(
+  'adminUsers/getUsersOnly',
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await axios.get(`${BASE_URL}/admin/users-only`, {
+        withCredentials: true
+      });
+      return data.users;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch users'
+      );
+    }
+  }
+);
+
+// Get users with role 'seller' only
+export const getSellersOnly = createAsyncThunk(
+  'adminUsers/getSellersOnly',
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await axios.get(`${BASE_URL}/admin/sellers-only`, {
+        withCredentials: true
+      });
+      return data.users;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch sellers'
+      );
+    }
+  }
+);
+
 // Get user details (admin)
 export const getUserDetails = createAsyncThunk(
   'adminUsers/getUserDetails',
@@ -80,6 +114,8 @@ export const deleteUser = createAsyncThunk(
 
 const initialState = {
   users: [],
+  usersOnly: [],
+  sellersOnly: [],
   user: null,
   loading: false,
   success: false,
@@ -113,6 +149,32 @@ const adminUsersSlice = createSlice({
         state.users = action.payload;
       })
       .addCase(getAllUsers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Get Users Only
+      .addCase(getUsersOnly.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getUsersOnly.fulfilled, (state, action) => {
+        state.loading = false;
+        state.usersOnly = action.payload;
+      })
+      .addCase(getUsersOnly.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Get Sellers Only
+      .addCase(getSellersOnly.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getSellersOnly.fulfilled, (state, action) => {
+        state.loading = false;
+        state.sellersOnly = action.payload;
+      })
+      .addCase(getSellersOnly.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

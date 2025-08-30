@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axios from '../../utils/axios';
 
 // Fetch All Products
 export const getProduct = createAsyncThunk(
@@ -49,10 +49,24 @@ export const createReviewforProduct = createAsyncThunk(
   }
 );
 
+// Get All Products for Admin (no pagination)
+export const getAdminProducts = createAsyncThunk(
+  'product/getAdminProducts',
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await axios.get('/api/v1/admin/products', { withCredentials: true });
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to fetch admin products');
+    }
+  }
+);
+
 const productSlice = createSlice({
   name: 'product',
   initialState: {
     products: [],
+    adminProducts: [],
     productCount: 0,
     loading: false,
     error: null,
@@ -112,6 +126,20 @@ const productSlice = createSlice({
       .addCase(createReviewforProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to create review';
+      })
+
+      .addCase(getAdminProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAdminProducts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.adminProducts = action.payload.products;
+      })
+      .addCase(getAdminProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch admin products';
       });
   }
 });

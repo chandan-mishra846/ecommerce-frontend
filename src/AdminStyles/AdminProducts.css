@@ -214,7 +214,7 @@
   color: #ffa000;
 }
 
-.rating {
+.products-table .rating {
   display: flex;
   flex-direction: column;
 }
