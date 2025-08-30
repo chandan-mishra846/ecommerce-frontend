@@ -15,6 +15,14 @@ import Login from './User/Login';
 import Profile from './User/Profile';
 import SellerDashboard from './pages/SellerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminUsers from './pages/AdminUsers';
+import AdminProducts from './pages/AdminProducts';
+import AdminProductCreate from './pages/AdminProductCreate';
+import AdminUpdateProduct from './pages/AdminUpdateProduct';
+import AdminOrders from './pages/AdminOrders';
+import AdminSellers from './pages/AdminSellers';
+import AdminAnalytics from './pages/AdminAnalytics';
+import ProcessOrder from './pages/ProcessOrder';
 import SellerProfile from './pages/SellerProfile';
 import AddProduct from './pages/AddProduct';
 import SellerProducts from './pages/SellerProducts';
@@ -154,6 +162,70 @@ function App() {
           element={
             <ProtectedRoute requiredRole="admin">
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminUsers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/sellers"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminSellers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/products"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminProducts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/products/create"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminProductCreate />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/product/update/:id"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminUpdateProduct />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/orders"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/analytics"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminAnalytics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/order/update/:id"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <ProcessOrder />
             </ProtectedRoute>
           }
         />

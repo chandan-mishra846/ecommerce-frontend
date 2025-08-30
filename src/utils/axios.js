@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Create axios instance with default config
 const instance = axios.create({
     // We don't need baseURL because we're using Vite's proxy
     withCredentials: true,
@@ -11,6 +12,9 @@ const instance = axios.create({
 // Add a request interceptor
 instance.interceptors.request.use(
     (config) => {
+        // Log outgoing requests
+        console.log(`[API Request] ${config.method.toUpperCase()} ${config.url}`);
+        
         // For multipart/form-data, let the browser set the Content-Type
         if (config.data instanceof FormData) {
             delete config.headers['Content-Type'];
@@ -18,19 +22,40 @@ instance.interceptors.request.use(
         return config;
     },
     (error) => {
+        console.error('[API Request Error]', error);
         return Promise.reject(error);
     }
 );
 
 // Add a response interceptor
 instance.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        console.log(`[API Response] ${response.config.url} - Status: ${response.status}`);
+        return response;
+    },
     (error) => {
-        // Handle errors
-        const message = error.response?.data?.message || error.message;
-        return Promise.reject({ message });
+        // Log detailed error information
+        if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            console.error(`[API Error] ${error.config?.url} - Status: ${error.response.status}`);
+            console.error('Response data:', error.response.data);
+            console.error('Response headers:', error.response.headers);
+        } else if (error.request) {
+            // The request was made but no response was received
+            console.error('[API Error] No response received:', error.request);
+        } else {
+            // Something happened in setting up the request that triggered an Error
+            console.error('[API Error] Request setup error:', error.message);
+        }
+        
+        const message = error.response?.data?.message || error.message || 'An unknown error occurred';
+        return Promise.reject({ message, originalError: error });
     }
 );
+
+// Set as default axios instance
+axios.defaults.withCredentials = true;
 
 export default instance;
 

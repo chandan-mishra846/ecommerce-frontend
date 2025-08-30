@@ -14,10 +14,10 @@ export default defineConfig({
     extensions: ['.js', '.jsx', '.json']
   },
   server: {
-    port: 5174,
+    port: 5175,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost:8002',
         changeOrigin: true,
         secure: false,
         ws: true

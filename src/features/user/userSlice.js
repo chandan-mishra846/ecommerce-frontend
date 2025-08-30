@@ -24,7 +24,10 @@ export const login = createAsyncThunk(
   'user/login',
   async ({ email, password, adminLogin, adminAccessCode }, { rejectWithValue }) => {
     try {
-      const config = { headers: { 'Content-Type': 'application/json' } };
+      const config = { 
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true 
+      };
       
       // If admin login, verify access code first
       if (adminLogin) {
@@ -36,6 +39,7 @@ export const login = createAsyncThunk(
       const { data } = await axios.post('/api/v1/login', { email, password, adminLogin }, config);
       return data;
     } catch (error) {
+      console.error('Login error:', error.response?.data || error.message);
       return rejectWithValue(error.response?.data?.message || 'Login failed.');
     }
   }
@@ -46,9 +50,10 @@ export const loadUser = createAsyncThunk(
   'user/loadUser',
   async (_, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get('/api/v1/profile');
+      const { data } = await axios.get('/api/v1/profile', { withCredentials: true });
       return data;
     } catch (error) {
+      console.error('Load user error:', error.response?.data || error.message);
       return rejectWithValue(error.response?.data || 'Failed to load user profile');
     }
   }

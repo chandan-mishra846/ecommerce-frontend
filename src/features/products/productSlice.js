@@ -11,7 +11,7 @@ export const getProduct = createAsyncThunk(
         : `/api/v1/products?page=${page}`; // ✅ fixed encodeURIComponent typo
 
       console.log('Making API call to:', link);
-      const { data } = await axios.get(link);
+      const { data } = await axios.get(link, { withCredentials: true });
       console.log('API Response:', data);
       return data;
     } catch (error) {
@@ -27,7 +27,7 @@ export const getProductDetails = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const link = `/api/v1/products/${id}`;
-      const { data } = await axios.get(link);
+      const { data } = await axios.get(link, { withCredentials: true });
       return data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'An error occurred');
