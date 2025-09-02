@@ -1,40 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
+import { getMyOrders, clearErrors } from '../features/orders/orderSlice';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import Loader from '../components/Loader';
+import PageTitle from '../components/PageTitle';
 import '../OrderStyles/OrderHistory.css';
 
 function OrderHistory() {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
   const [dateFilter, setDateFilter] = useState('all');
-  const { user } = useSelector((state) => state.user);
+  const { orders, loading, error } = useSelector((state) => state.order);
+  const { user, isAuthenticated } = useSelector((state) => state.user);
 
   useEffect(() => {
-    fetchOrderHistory();
-  }, []);
-
-  const fetchOrderHistory = async () => {
-    try {
-      const response = await fetch('/api/v1/seller/orders/history', {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setOrders(result.orders || []);
-      } else {
-        toast.error(result.message || 'Failed to fetch order history');
-      }
-    } catch (error) {
-      console.error('Error fetching order history:', error);
-      toast.error('Error fetching order history');
-    } finally {
-      setLoading(false);
+    if (isAuthenticated) {
+      dispatch(getMyOrders());
     }
-  };
+    
+    if (error) {
+      toast.error(error);
+      dispatch(clearErrors());
+    }
+  }, [dispatch, error, isAuthenticated]);
 
   const filterOrdersByDate = (orders) => {
     if (dateFilter === 'all') return orders;
@@ -77,35 +66,66 @@ function OrderHistory() {
     }
   };
 
-  const calculateTotalRevenue = (orders) => {
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return '#f59e0b';
+      case 'processing':
+        return '#3b82f6';
+      case 'shipped':
+        return '#8b5cf6';
+      case 'delivered':
+        return '#10b981';
+      case 'cancelled':
+        return '#ef4444';
+      default:
+        return '#6b7280';
+    }
+  };
+
+  const calculateTotalSpent = (orders) => {
     return orders
-      .filter(order => order.orderStatus?.toLowerCase() === 'delivered')
+      .filter(order => order.orderStatus?.toLowerCase() !== 'cancelled')
       .reduce((total, order) => total + (order.totalPrice || 0), 0);
   };
 
-  // Check if user is seller
-  if (!user || user.role !== 'seller') {
+  // Check if user is authenticated
+  if (!isAuthenticated) {
     return (
-      <div className="access-denied">
-        <h2>Access Denied</h2>
-        <p>You need to be a registered seller to view this page.</p>
-      </div>
+      <>
+        <PageTitle title="My Orders" />
+        <Navbar />
+        <div className="access-denied">
+          <h2>Access Denied</h2>
+          <p>Please login to view your orders.</p>
+        </div>
+        <Footer />
+      </>
     );
   }
 
   if (loading) {
-    return <Loader />;
+    return (
+      <>
+        <PageTitle title="My Orders" />
+        <Navbar />
+        <Loader />
+        <Footer />
+      </>
+    );
   }
 
-  const filteredOrders = filterOrdersByDate(orders);
-  const totalRevenue = calculateTotalRevenue(filteredOrders);
+  const filteredOrders = filterOrdersByDate(orders || []);
+  const totalSpent = calculateTotalSpent(filteredOrders);
 
   return (
     <>
+      <PageTitle title="My Orders - ShopEasy" />
+      <Navbar />
       <div className="order-history-container">
         <div className="order-history-header">
-          <h1>Order History</h1>
-          <p>Complete history of all your orders</p>
+          <h1>My Orders</h1>
+          <p>Track all your orders and purchase history</p>
         </div>
 
         <div className="history-stats">
@@ -114,8 +134,8 @@ function OrderHistory() {
             <div className="stat-number">{filteredOrders.length}</div>
           </div>
           <div className="stat-card revenue">
-            <h3>Total Revenue</h3>
-            <div className="stat-number">₹{totalRevenue}</div>
+            <h3>Total Spent</h3>
+            <div className="stat-number">₹{totalSpent.toFixed(2)}</div>
           </div>
         </div>
 
@@ -143,8 +163,14 @@ function OrderHistory() {
         {filteredOrders.length === 0 ? (
           <div className="no-history">
             <div className="no-history-icon">📋</div>
-            <h2>No Order History</h2>
-            <p>No orders found for the selected time period.</p>
+            <h2>No Orders Yet</h2>
+            <p>You haven't placed any orders yet. Start shopping to see your order history here!</p>
+            <button 
+              className="shop-now-btn"
+              onClick={() => window.location.href = '/'}
+            >
+              Start Shopping
+            </button>
           </div>
         ) : (
           <div className="history-timeline">
@@ -160,7 +186,13 @@ function OrderHistory() {
                   <div className="order-info">
                     <div className="order-header">
                       <h4>Order #{order._id?.slice(-8)}</h4>
-                      <span className={`status-badge ${order.orderStatus?.toLowerCase()}`}>
+                      <span 
+                        className={`status-badge ${order.orderStatus?.toLowerCase()}`}
+                        style={{ 
+                          backgroundColor: getStatusColor(order.orderStatus) + '20',
+                          color: getStatusColor(order.orderStatus)
+                        }}
+                      >
                         {order.orderStatus}
                       </span>
                     </div>
@@ -178,22 +210,56 @@ function OrderHistory() {
                       <span className="order-amount">₹{order.totalPrice}</span>
                     </div>
                     
-                    <div className="customer-details">
-                      <strong>Customer:</strong> {order.user?.name || 'Unknown'}
+                    <div className="shipping-details">
+                      <strong>Shipped to:</strong> 
+                      <div className="address">
+                        {order.shippingInfo?.address}, {order.shippingInfo?.city}, {order.shippingInfo?.state} - {order.shippingInfo?.pincode}
+                      </div>
                     </div>
                     
                     <div className="order-items-summary">
                       <strong>Items:</strong> {order.orderItems?.length || 0} product(s)
-                      {order.orderItems?.slice(0, 2).map((item, index) => (
+                      {order.orderItems?.slice(0, 3).map((item, index) => (
                         <div key={index} className="item-summary">
-                          • {item.name} × {item.quantity}
+                          <img 
+                            src={item.image} 
+                            alt={item.name}
+                            className="item-image"
+                            onError={(e) => {
+                              e.target.src = '/images/products/variations/adults-plain-cotton-tshirt-2-pack-black.jpg';
+                            }}
+                          />
+                          <div className="item-details">
+                            <span className="item-name">{item.name}</span>
+                            <span className="item-qty">Qty: {item.quantity}</span>
+                            <span className="item-price">₹{item.price}</span>
+                          </div>
                         </div>
                       ))}
-                      {order.orderItems?.length > 2 && (
+                      {order.orderItems?.length > 3 && (
                         <div className="more-items">
-                          ... and {order.orderItems.length - 2} more items
+                          ... and {order.orderItems.length - 3} more items
                         </div>
                       )}
+                    </div>
+
+                    <div className="order-summary">
+                      <div className="summary-row">
+                        <span>Items Total:</span>
+                        <span>₹{order.itemPrice}</span>
+                      </div>
+                      <div className="summary-row">
+                        <span>Tax:</span>
+                        <span>₹{order.taxPrice}</span>
+                      </div>
+                      <div className="summary-row">
+                        <span>Shipping:</span>
+                        <span>₹{order.shippingPrice}</span>
+                      </div>
+                      <div className="summary-row total">
+                        <span>Total:</span>
+                        <span>₹{order.totalPrice}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -202,6 +268,7 @@ function OrderHistory() {
           </div>
         )}
       </div>
+      <Footer />
     </>
   );
 }

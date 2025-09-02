@@ -46,7 +46,6 @@ function Home() {
       ) : (
         <>
           <PageTitle title="Home - My Website" />
-          <NavbarSelector />
           <ImageSlider />
           <div className="home-container">
             <h2 className="home-heading">Trending Now</h2>

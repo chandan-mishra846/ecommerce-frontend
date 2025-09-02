@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { ToastContainer } from 'react-toastify'; // Import ToastContainer
 import 'react-toastify/dist/ReactToastify.css'; // Import toastify CSS
+import './index.css'; // Add this to include custom toast styles
 
 import Home from './pages/Home';
 import ProductDetails from './pages/ProductDetails';
@@ -39,6 +40,8 @@ import UpdatePassword from './User/UpdatePassword';
 import ForgotPassword from './User/forgotPassword'; // Corrected capitalization
 import ResetPassword from './User/resetPassword'; // Corrected capitalization
 import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import OrderSuccess from './pages/OrderSuccess';
 
 
 function App() {
@@ -89,6 +92,30 @@ function App() {
         <Route path="/password/forgot" element={<ForgotPassword />} />
         <Route path="/reset/:token" element={<ResetPassword/>} />
         <Route path="/cart" element={<Cart />} />
+        <Route 
+          path="/checkout" 
+          element={
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/order-success" 
+          element={
+            <ProtectedRoute>
+              <OrderSuccess />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/orders" 
+          element={
+            <ProtectedRoute>
+              <OrderHistory />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* Seller Routes */}
         <Route
@@ -234,18 +261,20 @@ function App() {
 
       {isAuthenticated && <UserDashboard user={user} />}
 
-      {/* ✅ Add ToastContainer here, once at the root of your app */}
-      <ToastContainer 
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
+      {/* Temporarily disable ToastContainer */}
+      {/* <ToastContainer 
+        position="bottom-center"
+        autoClose={1500}
+        hideProgressBar
         newestOnTop={false}
         closeOnClick
         rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+        pauseOnFocusLoss={false}
+        draggable={false}
+        pauseOnHover={false}
+        limit={1}
+        toastClassName="custom-toast"
+      /> */}
     </Router>
   );
 }

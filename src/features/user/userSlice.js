@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axios from "../../utils/axios";
 
 // ------------------------
 // Async Thunks for API Calls
@@ -131,8 +131,14 @@ export const resetPassword = createAsyncThunk(
 // Cart Operations (API)
 export const fetchCart = createAsyncThunk(
   'user/fetchCart',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
+      const state = getState();
+      // Prevent multiple simultaneous requests
+      if (state.user.loading) {
+        return rejectWithValue('Request already in progress');
+      }
+      
       const { data } = await axios.get('/api/v1/cart');
       return data;
     } catch (error) {
@@ -316,33 +322,43 @@ const userSlice = createSlice({
     });
     
     // Cart Operations
-    builder.addCase(fetchCart.pending, (state) => { state.loading = true; state.error = null; });
+    builder.addCase(fetchCart.pending, (state) => { 
+      state.loading = true; 
+      state.error = null; 
+    });
     builder.addCase(fetchCart.fulfilled, (state, action) => {
       console.log("userSlice: fetchCart.fulfilled - Payload:", action.payload);
       state.loading = false;
-      if (action.payload.cart && action.payload.cart.items) {
-        state.cart = action.payload.cart.items.map(item => ({
+      
+      // Check if cart data actually changed to prevent unnecessary updates
+      const newCartData = action.payload.cart && action.payload.cart.items ? 
+        action.payload.cart.items.map(item => ({
           _id: item._id,
           product: item.product,
           quantity: item.quantity,
           price: item.price,
           name: item.product?.name ?? 'Unknown Product',
-          image: item.product?.image?.[0]?.url ?? '/images/products/variations/adults-plain-cotton-tshirt-2-pack-black.jpg', // Updated default image path
+          image: item.product?.image?.[0]?.url ?? '/images/products/variations/adults-plain-cotton-tshirt-2-pack-black.jpg',
           stock: item.product?.stock ?? 0
-        }));
-        state.cartItems = state.cart.reduce((total, item) => total + item.quantity, 0);
-        state.cartTotal = state.cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-      } else {
-        state.cart = [];
-        state.cartItems = 0;
-        state.cartTotal = 0;
+        })) : [];
+      
+      // Only update state if data actually changed
+      const cartChanged = JSON.stringify(state.cart) !== JSON.stringify(newCartData);
+      
+      if (cartChanged) {
+        state.cart = newCartData;
+        state.cartItems = newCartData.reduce((total, item) => total + item.quantity, 0);
+        state.cartTotal = newCartData.reduce((total, item) => total + (item.price * item.quantity), 0);
+        console.log("userSlice: fetchCart.fulfilled - Updated cart state:", state.cart);
       }
-      console.log("userSlice: fetchCart.fulfilled - Updated cart state:", state.cart);
     });
     builder.addCase(fetchCart.rejected, (state, action) => {
       console.error("userSlice: fetchCart.rejected - Error:", action.payload);
       state.loading = false;
-      state.error = action.payload?.message || action.payload || 'Failed to fetch cart';
+      // Only set error if it's not a duplicate request
+      if (action.payload !== 'Request already in progress') {
+        state.error = action.payload?.message || action.payload || 'Failed to fetch cart';
+      }
     });
 
     builder.addCase(addToCartAPI.pending, (state) => { state.loading = true; state.error = null; });

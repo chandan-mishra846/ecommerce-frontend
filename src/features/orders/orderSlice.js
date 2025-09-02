@@ -1,14 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-const BASE_URL = 'http://localhost:8002/api/v1';
+import axios from '../../utils/axios';
 
 // Get all orders (admin)
 export const getAllOrders = createAsyncThunk(
   'orders/getAllOrders',
   async (_, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get(`${BASE_URL}/admin/order`, {
+      const { data } = await axios.get('/api/v1/admin/order', {
         withCredentials: true
       });
       return data;
@@ -25,7 +23,7 @@ export const getOrderDetails = createAsyncThunk(
   'orders/getOrderDetails',
   async (id, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get(`${BASE_URL}/admin/order/${id}`, {
+      const { data } = await axios.get(`/api/v1/admin/order/${id}`, {
         withCredentials: true
       });
       return data;
@@ -43,7 +41,7 @@ export const updateOrderStatus = createAsyncThunk(
   async ({ id, status }, { rejectWithValue }) => {
     try {
       const { data } = await axios.put(
-        `${BASE_URL}/admin/order/${id}`,
+        `/api/v1/admin/order/${id}`,
         { status },
         {
           headers: {
@@ -66,7 +64,7 @@ export const deleteOrder = createAsyncThunk(
   'orders/deleteOrder',
   async (id, { rejectWithValue }) => {
     try {
-      const { data } = await axios.delete(`${BASE_URL}/admin/order/${id}`, {
+      const { data } = await axios.delete(`/api/v1/admin/order/${id}`, {
         withCredentials: true
       });
       return { id, message: data.message };
@@ -83,7 +81,7 @@ export const getMyOrders = createAsyncThunk(
   'orders/getMyOrders',
   async (_, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get(`${BASE_URL}/order/user`, {
+      const { data } = await axios.get('/api/v1/order/user', {
         withCredentials: true
       });
       return data;
