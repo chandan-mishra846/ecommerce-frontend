@@ -38,8 +38,8 @@ import { loadUser, fetchCart } from './features/user/userSlice';
 import ProtectedRoute from './components/ProtectedRoute';
 import NavbarSelector from './components/NavbarSelector';
 import UpdatePassword from './User/UpdatePassword';
-import ForgotPassword from './User/forgotPassword'; // Corrected capitalization
-import ResetPassword from './User/resetPassword'; // Corrected capitalization
+import ForgotPassword from './User/ForgotPassword'; // Corrected capitalization
+import ResetPassword from './User/ResetPassword'; // Corrected capitalization
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
