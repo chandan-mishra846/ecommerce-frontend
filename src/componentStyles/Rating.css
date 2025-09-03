@@ -1,19 +1,27 @@
 
 .rating {
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 0.05rem;
-  flex-wrap: nowrap;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 2px !important;
+  flex-wrap: nowrap !important;
+  width: auto !important;
+  height: auto !important;
 }
 
   .star {
-    font-size: 1.2rem;
+    font-size: 14px !important;
     cursor: pointer;
     transition: color 0.3s ease, transform 0.3s ease;
-    color: var(--text-secondary);
-    display: inline-block;
+    color: #fbbf24 !important;
+    display: inline-block !important;
+    line-height: 1 !important;
+    vertical-align: middle !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
   .star.filled {

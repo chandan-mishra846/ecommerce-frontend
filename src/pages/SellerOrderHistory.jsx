@@ -2,35 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
-import '../pageStyles/AllOrders.css';
 
 // Material UI Icons
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import HistoryIcon from '@mui/icons-material/History';
 import PersonIcon from '@mui/icons-material/Person';
 import EmailIcon from '@mui/icons-material/Email';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PendingIcon from '@mui/icons-material/Pending';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import SearchIcon from '@mui/icons-material/Search';
+import FilterListIcon from '@mui/icons-material/FilterList';
 
-function AllOrders() {
+function SellerOrderHistory() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sortBy, setSortBy] = useState('date-newest');
-  const [updatingOrder, setUpdatingOrder] = useState(null);
-
   const { user } = useSelector((state) => state.user);
 
   useEffect(() => {
-    fetchOrders();
+    fetchOrderHistory();
   }, []);
 
-  const fetchOrders = async () => {
+  const fetchOrderHistory = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/v1/seller/orders', {
+      const response = await fetch('/api/v1/seller/orders/history', {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -38,77 +36,92 @@ function AllOrders() {
         },
       });
 
-      console.log(`Fetch orders response status: ${response.status}`);
+      console.log(`Fetch order history response status: ${response.status}`);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Fetch orders error:', errorText);
+        console.error('Fetch order history error:', errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result = await response.json();
-      console.log('Fetched orders:', result);
+      console.log('Fetched order history:', result);
 
       if (result.success) {
         setOrders(result.orders || []);
       } else {
-        toast.error(result.message || 'Failed to fetch orders');
+        toast.error(result.message || 'Failed to fetch order history');
       }
     } catch (error) {
-      console.error('Error fetching orders:', error);
-      toast.error('Error fetching orders. Please check your connection.');
+      console.error('Error fetching order history:', error);
+      toast.error('Error fetching order history. Please check your connection.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStatusUpdate = async (orderId, newStatus) => {
-    setUpdatingOrder(orderId);
-    
-    try {
-      console.log(`Updating order ${orderId} to status: ${newStatus}`);
-      
-      const response = await fetch(`/api/v1/seller/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ status: newStatus }),
-      });
+  const getFilteredOrders = () => {
+    let filtered = [...orders];
 
-      console.log(`Response status: ${response.status}`);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Response error:', errorText);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
-      }
-
-      const result = await response.json();
-      console.log('Update result:', result);
-
-      if (result.success) {
-        toast.success('Order status updated successfully!');
-        // Update the local state immediately for better UX
-        setOrders(prevOrders =>
-          prevOrders.map(order =>
-            order._id === orderId
-              ? { ...order, orderStatus: newStatus }
-              : order
-          )
-        );
-        // Also refresh from server to ensure consistency
-        fetchOrders();
-      } else {
-        toast.error(result.message || 'Failed to update order status');
-      }
-    } catch (error) {
-      console.error('Error updating order status:', error);
-      toast.error(`Error updating order status: ${error.message || 'Please try again.'}`);
-    } finally {
-      setUpdatingOrder(null);
+    // Search filter
+    if (searchTerm.trim()) {
+      filtered = filtered.filter(order =>
+        order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.orderItems?.some(item => 
+          item.product?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
     }
+
+    // Status filter
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter(order => 
+        order.orderStatus?.toLowerCase() === filterStatus.toLowerCase()
+      );
+    }
+
+    // Sort orders
+    switch (sortBy) {
+      case 'date-newest':
+        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+      case 'date-oldest':
+        filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+      case 'amount-high':
+        filtered.sort((a, b) => (b.totalPrice || 0) - (a.totalPrice || 0));
+        break;
+      case 'amount-low':
+        filtered.sort((a, b) => (a.totalPrice || 0) - (b.totalPrice || 0));
+        break;
+      case 'customer-az':
+        filtered.sort((a, b) => (a.user?.name || '').localeCompare(b.user?.name || ''));
+        break;
+      case 'customer-za':
+        filtered.sort((a, b) => (b.user?.name || '').localeCompare(a.user?.name || ''));
+        break;
+      default:
+        break;
+    }
+
+    return filtered;
+  };
+
+  const filteredOrders = getFilteredOrders();
+
+  const getOrderStats = () => {
+    const stats = {
+      total: orders.length,
+      delivered: orders.filter(o => o.orderStatus?.toLowerCase() === 'delivered').length,
+      pending: orders.filter(o => o.orderStatus?.toLowerCase() === 'pending').length,
+      processing: orders.filter(o => o.orderStatus?.toLowerCase() === 'processing').length,
+      totalRevenue: orders
+        .filter(o => o.orderStatus?.toLowerCase() === 'delivered')
+        .reduce((sum, order) => sum + (order.totalPrice || 0), 0)
+    };
+    return stats;
   };
 
   const getStatusColor = (status) => {
@@ -122,67 +135,41 @@ function AllOrders() {
       case 'delivered':
         return { bg: '#d1fae5', color: '#047857', border: '#10b981' };
       case 'cancelled':
-        return { bg: '#fee2e2', color: '#dc2626', border: '#ef4444' };
+        return { bg: '#fee2e2', color: '#dc2626', border: '#f87171' };
       default:
-        return { bg: '#f3f4f6', color: '#4b5563', border: '#6b7280' };
+        return { bg: '#f3f4f6', color: '#374151', border: '#9ca3af' };
     }
   };
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'INR'
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(price);
-  };
-
-  // Filter and sort orders
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = 
-      order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.user?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.orderItems?.some(item => 
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    const matchesStatus = filterStatus === 'all' || order.orderStatus?.toLowerCase() === filterStatus;
-    return matchesSearch && matchesStatus;
-  }).sort((a, b) => {
-    switch (sortBy) {
-      case 'date-newest':
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      case 'date-oldest':
-        return new Date(a.createdAt) - new Date(b.createdAt);
-      case 'amount-high':
-        return (b.totalPrice || 0) - (a.totalPrice || 0);
-      case 'amount-low':
-        return (a.totalPrice || 0) - (b.totalPrice || 0);
-      case 'customer-az':
-        return (a.user?.name || '').localeCompare(b.user?.name || '');
-      case 'customer-za':
-        return (b.user?.name || '').localeCompare(a.user?.name || '');
-      default:
-        return 0;
-    }
-  });
-
-  const getOrderStats = () => {
-    const stats = {
-      total: orders.length,
-      pending: orders.filter(o => o.orderStatus?.toLowerCase() === 'pending').length,
-      processing: orders.filter(o => o.orderStatus?.toLowerCase() === 'processing').length,
-      shipped: orders.filter(o => o.orderStatus?.toLowerCase() === 'shipped').length,
-      delivered: orders.filter(o => o.orderStatus?.toLowerCase() === 'delivered').length,
-      totalRevenue: orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0)
-    };
-    return stats;
   };
 
   // Check if user is seller
   if (!user || user.role !== 'seller') {
     return (
-      <div className="access-denied">
-        <h2>Access Denied</h2>
-        <p>You need to be a registered seller to view this page.</p>
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      }}>
+        <div style={{
+          background: 'white',
+          borderRadius: '16px',
+          padding: '40px',
+          textAlign: 'center',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)'
+        }}>
+          <h2 style={{ color: '#dc2626', marginBottom: '15px' }}>Access Denied</h2>
+          <p style={{ color: '#64748b' }}>You need to be a registered seller to view this page.</p>
+        </div>
       </div>
     );
   }
@@ -192,7 +179,7 @@ function AllOrders() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       padding: '20px'
     }}>
       <div style={{
@@ -200,38 +187,50 @@ function AllOrders() {
         margin: '0 auto',
         background: 'white',
         borderRadius: '20px',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
         overflow: 'hidden'
       }}>
         {/* Header Section */}
         <div style={{
-          background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
-          padding: '30px',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          padding: '40px',
           color: 'white'
         }}>
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '20px'
+            marginBottom: '30px'
           }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '15px'
+              gap: '20px'
             }}>
-              <ShoppingCartIcon style={{ fontSize: '2.5rem' }} />
+              <div style={{
+                width: '60px',
+                height: '60px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '2rem'
+              }}>
+                <HistoryIcon style={{ fontSize: '2rem' }} />
+              </div>
               <div>
                 <h1 style={{
                   margin: '0 0 10px 0',
-                  fontSize: '2.5rem',
-                  fontWeight: '700'
-                }}>All Orders</h1>
+                  fontSize: '3rem',
+                  fontWeight: '700',
+                  letterSpacing: '-0.02em'
+                }}>Order History</h1>
                 <p style={{
                   margin: 0,
                   opacity: '0.9',
-                  fontSize: '1.1rem'
-                }}>Manage and track all your customer orders</p>
+                  fontSize: '1.2rem'
+                }}>Complete history of all your processed orders</p>
               </div>
             </div>
             <Link 
@@ -285,9 +284,9 @@ function AllOrders() {
               backdropFilter: 'blur(10px)',
               textAlign: 'center'
             }}>
-              <h3 style={{ margin: '0 0 10px 0', opacity: '0.9' }}>Pending</h3>
-              <span style={{ fontSize: '2rem', fontWeight: '700', color: '#fbbf24' }}>
-                {stats.pending}
+              <h3 style={{ margin: '0 0 10px 0', opacity: '0.9' }}>Delivered</h3>
+              <span style={{ fontSize: '2rem', fontWeight: '700', color: '#10b981' }}>
+                {stats.delivered}
               </span>
             </div>
             <div style={{
@@ -297,9 +296,9 @@ function AllOrders() {
               backdropFilter: 'blur(10px)',
               textAlign: 'center'
             }}>
-              <h3 style={{ margin: '0 0 10px 0', opacity: '0.9' }}>Delivered</h3>
-              <span style={{ fontSize: '2rem', fontWeight: '700', color: '#10b981' }}>
-                {stats.delivered}
+              <h3 style={{ margin: '0 0 10px 0', opacity: '0.9' }}>Processing</h3>
+              <span style={{ fontSize: '2rem', fontWeight: '700', color: '#3b82f6' }}>
+                {stats.processing}
               </span>
             </div>
             <div style={{
@@ -327,14 +326,14 @@ function AllOrders() {
               width: '50px',
               height: '50px',
               border: '4px solid #f3f3f3',
-              borderTop: '4px solid #3b82f6',
+              borderTop: '4px solid #667eea',
               borderRadius: '50%',
               animation: 'spin 1s linear infinite'
             }}></div>
-            <p style={{ marginTop: '20px', color: '#64748b' }}>Loading orders...</p>
+            <p style={{ marginTop: '20px', color: '#64748b' }}>Loading order history...</p>
           </div>
         ) : (
-          <div style={{ padding: '30px' }}>
+          <div style={{ padding: '40px' }}>
             {/* Search and Filter Section */}
             <div style={{
               display: 'flex',
@@ -343,24 +342,32 @@ function AllOrders() {
               flexWrap: 'wrap',
               alignItems: 'center'
             }}>
-              <input
-                type="text"
-                placeholder="Search orders by ID, customer, or item..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  flex: '1',
-                  minWidth: '300px',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '12px',
-                  fontSize: '1rem',
-                  outline: 'none',
-                  transition: 'all 0.3s ease'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-              />
+              <div style={{ position: 'relative', flex: '1', minWidth: '300px' }}>
+                <SearchIcon style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#64748b'
+                }} />
+                <input
+                  type="text"
+                  placeholder="Search by order ID, customer, or product..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px 12px 45px',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '12px',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                />
+              </div>
               
               <select
                 value={filterStatus}
@@ -411,9 +418,9 @@ function AllOrders() {
               }}>
                 {orders.length === 0 ? (
                   <>
-                    <div style={{ fontSize: '4rem', marginBottom: '20px' }}>📦</div>
-                    <h2 style={{ marginBottom: '10px' }}>No Orders Yet</h2>
-                    <p style={{ marginBottom: '30px' }}>You haven't received any orders yet.</p>
+                    <div style={{ fontSize: '4rem', marginBottom: '20px' }}>📜</div>
+                    <h2 style={{ marginBottom: '10px' }}>No Order History Yet</h2>
+                    <p style={{ marginBottom: '30px' }}>You haven't processed any orders yet.</p>
                   </>
                 ) : (
                   <>
@@ -437,7 +444,7 @@ function AllOrders() {
                     borderCollapse: 'collapse'
                   }}>
                     <thead style={{
-                      background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)'
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                     }}>
                       <tr>
                         <th style={{
@@ -471,7 +478,7 @@ function AllOrders() {
                           textTransform: 'uppercase',
                           letterSpacing: '0.5px',
                           border: 'none',
-                          width: '25%'
+                          width: '20%'
                         }}>Items</th>
                         <th style={{
                           padding: '20px 15px',
@@ -504,8 +511,8 @@ function AllOrders() {
                           textTransform: 'uppercase',
                           letterSpacing: '0.5px',
                           border: 'none',
-                          width: '15%'
-                        }}>Status</th>
+                          width: '20%'
+                        }}>Status & Address</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -541,6 +548,13 @@ function AllOrders() {
                                 color: '#334155'
                               }}>
                                 #{order._id?.slice(-8)}
+                              </div>
+                              <div style={{
+                                fontSize: '0.75rem',
+                                color: '#64748b',
+                                marginTop: '4px'
+                              }}>
+                                {new Date(order.createdAt).toLocaleDateString()}
                               </div>
                             </td>
                             <td style={{
@@ -593,7 +607,7 @@ function AllOrders() {
                                     color: '#64748b',
                                     marginBottom: '2px'
                                   }}>
-                                    {item.name} (×{item.quantity})
+                                    {item.product?.name || item.name} (×{item.quantity})
                                   </div>
                                 ))}
                                 {order.orderItems?.length > 2 && (
@@ -624,37 +638,44 @@ function AllOrders() {
                               color: '#475569',
                               border: 'none'
                             }}>
-                              {new Date(order.createdAt).toLocaleDateString()}
+                              <div style={{ marginBottom: '4px' }}>
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </div>
+                              <div style={{
+                                fontSize: '0.75rem',
+                                color: '#64748b'
+                              }}>
+                                {new Date(order.createdAt).toLocaleTimeString()}
+                              </div>
                             </td>
                             <td style={{
                               padding: '20px 15px',
                               verticalAlign: 'middle',
-                              border: 'none',
-                              textAlign: 'center'
+                              border: 'none'
                             }}>
-                              <select
-                                value={order.orderStatus}
-                                onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
-                                disabled={updatingOrder === order._id}
-                                style={{
-                                  padding: '8px 12px',
+                              <div style={{
+                                marginBottom: '8px'
+                              }}>
+                                <span style={{
+                                  padding: '6px 12px',
                                   borderRadius: '20px',
                                   border: `2px solid ${statusColors.border}`,
                                   background: statusColors.bg,
                                   color: statusColors.color,
-                                  fontSize: '0.8rem',
-                                  fontWeight: '600',
-                                  cursor: updatingOrder === order._id ? 'wait' : 'pointer',
-                                  outline: 'none',
-                                  minWidth: '120px'
-                                }}
-                              >
-                                <option value="pending">Pending</option>
-                                <option value="processing">Processing</option>
-                                <option value="shipped">Shipped</option>
-                                <option value="delivered">Delivered</option>
-                                <option value="cancelled">Cancelled</option>
-                              </select>
+                                  fontSize: '0.75rem',
+                                  fontWeight: '600'
+                                }}>
+                                  {order.orderStatus}
+                                </span>
+                              </div>
+                              <div style={{
+                                fontSize: '0.75rem',
+                                color: '#64748b',
+                                lineHeight: '1.3'
+                              }}>
+                                <LocalShippingIcon style={{ fontSize: '12px', marginRight: '4px' }} />
+                                {order.shippingInfo?.city}, {order.shippingInfo?.state}
+                              </div>
                             </td>
                           </tr>
                         );
@@ -671,4 +692,4 @@ function AllOrders() {
   );
 }
 
-export default AllOrders;
+export default SellerOrderHistory;

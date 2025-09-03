@@ -73,13 +73,6 @@ function SellerNavbar() {
               <h2>Seller Portal</h2>
             </Link>
           </div>
-
-          <div className="seller-navbar-user">
-            <span className="user-welcome">Welcome, {user?.name}</span>
-            <div className="user-avatar">
-              <img src={user?.avatar?.url || '/images/profile.png'} alt="Profile" />
-            </div>
-          </div>
         </div>
       </nav>
 
@@ -135,10 +128,6 @@ function SellerNavbar() {
 
           <div className="menu-section">
             <h4>Account</h4>
-            <Link to="/seller/profile" className="menu-item" onClick={closeSidebar}>
-              <PersonIcon className="menu-icon" />
-              <span>Profile</span>
-            </Link>
             <button className="menu-item logout-btn" onClick={handleLogout}>
               <LogoutIcon className="menu-icon" />
               <span>Logout</span>

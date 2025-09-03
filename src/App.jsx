@@ -30,6 +30,7 @@ import SellerProducts from './pages/SellerProducts';
 import OutOfStockProducts from './pages/OutOfStockProducts';
 import AllOrders from './pages/AllOrders';
 import OrderHistory from './pages/OrderHistory';
+import SellerOrderHistory from './pages/SellerOrderHistory';
 import TotalProfit from './pages/TotalProfit';
 
 // Corrected import path for loadUser
