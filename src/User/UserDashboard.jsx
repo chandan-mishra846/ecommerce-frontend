@@ -16,7 +16,7 @@ function UserDashboard({ user }) {
   }
 
   function orders() {
-    navigate('/order/user');
+    navigate('/orders');
   }
 
   function profile() {

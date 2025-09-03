@@ -13,15 +13,40 @@ function Pagination({
 
   const pages = [];
 
-  if (currentPage > 2) {
-    pages.push(
-      <button key="first" onClick={() => onPageChange(1)} className="pagination-btn">
-        {firstPageText}
-      </button>
-    );
+  const showPrev = currentPage > 1;
+  const showNext = currentPage < totalPages;
+  
+  // Determine page range to show (only current page and adjacent pages that don't duplicate Prev/Next)
+  let start = currentPage;
+  let end = currentPage;
+
+  // Add previous page only if we're NOT showing Prev button
+  if (currentPage > 1 && !showPrev) {
+    start = currentPage - 1;
+  }
+  
+  // Add next page only if we're NOT showing Next button  
+  if (currentPage < totalPages && !showNext) {
+    end = currentPage + 1;
   }
 
-  if (currentPage > 1) {
+  // For middle pages, show current page only
+  if (showPrev && showNext) {
+    start = currentPage;
+    end = currentPage;
+  }
+  
+  // For first page, show current and next if no Next button
+  if (currentPage === 1 && totalPages > 1) {
+    end = showNext ? currentPage : Math.min(currentPage + 1, totalPages);
+  }
+  
+  // For last page, show previous and current if no Prev button
+  if (currentPage === totalPages && totalPages > 1) {
+    start = showPrev ? currentPage : Math.max(currentPage - 1, 1);
+  }
+
+  if (showPrev) {
     pages.push(
       <button key="prev" onClick={() => onPageChange(currentPage - 1)} className="pagination-btn">
         Prev
@@ -29,9 +54,7 @@ function Pagination({
     );
   }
 
-  const start = Math.max(1, currentPage - 1);
-  const end = Math.min(totalPages, currentPage + 1);
-
+  // Add page numbers
   for (let i = start; i <= end; i++) {
     pages.push(
       <button
@@ -44,18 +67,10 @@ function Pagination({
     );
   }
 
-  if (currentPage < totalPages) {
+  if (showNext) {
     pages.push(
       <button key="next" onClick={() => onPageChange(currentPage + 1)} className="pagination-btn">
         Next
-      </button>
-    );
-  }
-
-  if (currentPage < totalPages - 1) {
-    pages.push(
-      <button key="last" onClick={() => onPageChange(totalPages)} className="pagination-btn">
-        {lastPageText}
       </button>
     );
   }

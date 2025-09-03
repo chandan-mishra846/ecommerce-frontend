@@ -47,10 +47,7 @@ function AdminNavbar() {
           </div>
 
           <div className="admin-navbar-user">
-            <span className="user-welcome">Welcome, {user?.name}</span>
-            <div className="user-avatar">
-              <img src={user?.avatar?.url || '/images/profile.png'} alt="Profile" />
-            </div>
+            {/* Profile removed from navbar */}
           </div>
         </div>
       </nav>

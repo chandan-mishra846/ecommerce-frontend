@@ -37,7 +37,27 @@ function AddProduct() {
     'Computers',
     'Mobile Phones',
     'Furniture',
-    'Fashion Accessories'
+    'Fashion Accessories',
+    'Gaming',
+    'Kitchen & Dining',
+    'Pet Supplies',
+    'Office Supplies',
+    'Music & Instruments',
+    'Art & Crafts',
+    'Baby & Kids',
+    'Fitness Equipment',
+    'Travel & Luggage',
+    'Tools & Hardware',
+    'Camera & Photography',
+    'Watches',
+    'Shoes & Footwear',
+    'Bags & Backpacks',
+    'Stationery',
+    'Home Appliances',
+    'Outdoor & Camping',
+    'Educational',
+    'Religious & Spiritual',
+    'Collectibles & Antiques'
   ];
 
   const handleInputChange = (e) => {

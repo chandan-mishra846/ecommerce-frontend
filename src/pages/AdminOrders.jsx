@@ -229,93 +229,101 @@ function AdminOrders() {
             </div>
           ) : (
             <div className="orders-table-container">
-              <table className="orders-table">
-                <thead>
-                  <tr>
-                    <th>Order #</th>
-                    <th>Customer</th>
-                    <th>Items</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredOrders.length > 0 ? (
-                    filteredOrders.map(order => (
-                      <tr key={order._id}>
-                        <td>{order._id.substring(0, 8)}</td>
-                        <td className="customer-info">
-                          <div className="customer-name">{order.user?.name || 'User'}</div>
-                          <div className="customer-email">{order.user?.email || 'No email'}</div>
-                        </td>
-                        <td className="order-items">
-                          <div className="item-count">{order.orderItems?.length || 0} item(s)</div>
-                          <div className="item-thumbnails">
-                            {order.orderItems && order.orderItems.slice(0, 3).map((item, index) => (
-                              <img 
-                                key={item._id || index} 
-                                src={item.image || '/public/vite.svg'} 
-                                alt={item.name || 'Product'} 
-                                className="item-thumbnail" 
-                                title={item.name || 'Product'}
-                              />
-                            ))}
-                            {order.orderItems && order.orderItems.length > 3 && (
-                              <div className="more-items">+{order.orderItems.length - 3}</div>
+              <div className="orders-header">
+                <div className="orders-count">
+                  <h3>All Orders ({filteredOrders.length})</h3>
+                </div>
+              </div>
+              
+              <div className="table-wrapper">
+                <table className="orders-table">
+                  <thead>
+                    <tr>
+                      <th>Order #</th>
+                      <th>Customer</th>
+                      <th>Items</th>
+                      <th>Total</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredOrders.length > 0 ? (
+                      filteredOrders.map(order => (
+                        <tr key={order._id} className="order-row">
+                          <td className="order-id-cell">#{order._id.substring(0, 8)}</td>
+                          <td className="customer-info">
+                            <div className="customer-details-table">
+                              <div className="customer-name">{order.user?.name || 'User'}</div>
+                              <div className="customer-email">{order.user?.email || 'No email'}</div>
+                            </div>
+                          </td>
+                          <td className="order-items-cell">
+                            <div className="item-count">{order.orderItems?.length || 0} item(s)</div>
+                            <div className="item-thumbnails">
+                              {order.orderItems && order.orderItems.slice(0, 2).map((item, index) => (
+                                <img 
+                                  key={item._id || index} 
+                                  src={item.image || '/public/vite.svg'} 
+                                  alt={item.name || 'Product'} 
+                                  className="item-thumbnail" 
+                                  title={item.name || 'Product'}
+                                />
+                              ))}
+                              {order.orderItems && order.orderItems.length > 2 && (
+                                <div className="more-items">+{order.orderItems.length - 2}</div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="order-total-cell">₹{order.totalPrice?.toFixed(2) || '0.00'}</td>
+                          <td className="order-status-cell">
+                            <div className={`status-badge-table ${order.orderStatus.toLowerCase()}`}>
+                              {order.orderStatus}
+                            </div>
+                            <select
+                              className="status-select"
+                              value={order.orderStatus}
+                              onChange={(e) => handleUpdateOrderStatus(order._id, e.target.value)}
+                            >
+                              <option value="Processing">Processing</option>
+                              <option value="Shipped">Shipped</option>
+                              <option value="Delivered">Delivered</option>
+                              <option value="Cancelled">Cancelled</option>
+                            </select>
+                          </td>
+                          <td className="order-date-cell">
+                            <div>{formatDate(order.createdAt)}</div>
+                            {order.deliveredAt && (
+                              <div className="delivered-date">Delivered: {formatDate(order.deliveredAt)}</div>
                             )}
-                          </div>
-                        </td>
-                        <td className="order-total">${order.totalPrice?.toFixed(2) || '0.00'}</td>
-                        <td className="order-status">
-                          <div className={`status-badge ${order.orderStatus.toLowerCase()}`}>
-                            {getStatusIcon(order.orderStatus)}
-                            <span>{order.orderStatus}</span>
-                          </div>
-                          <select
-                            className="status-select"
-                            value={order.orderStatus}
-                            onChange={(e) => handleUpdateOrderStatus(order._id, e.target.value)}
-                          >
-                            <option value="Processing">Processing</option>
-                            <option value="Shipped">Shipped</option>
-                            <option value="Delivered">Delivered</option>
-                            <option value="Cancelled">Cancelled</option>
-                          </select>
-                        </td>
-                        <td className="order-date">
-                          <div>Ordered: {formatDate(order.createdAt)}</div>
-                          {order.deliveredAt && (
-                            <div className="delivered-date">Delivered: {formatDate(order.deliveredAt)}</div>
-                          )}
-                        </td>
-                        <td className="actions">
-                          <Link to={`/admin/order/update/${order._id}`} className="view-btn" title="View Order Details">
-                            <VisibilityIcon />
-                          </Link>
-                          <Link to={`/admin/order/update/${order._id}`} className="edit-btn" title="Edit Order">
-                            <EditIcon />
-                          </Link>
-                          <button 
-                            className="delete-btn"
-                            onClick={() => handleDeleteOrder(order._id)}
-                            title="Delete Order"
-                          >
-                            <DeleteIcon />
-                          </button>
+                          </td>
+                          <td className="order-actions-cell">
+                            <div className="actions">
+                              <Link to={`/admin/order/update/${order._id}`} className="action-btn-table edit-btn" title="Update Order">
+                                Update
+                              </Link>
+                              <button 
+                                className="action-btn-table delete-btn"
+                                onClick={() => handleDeleteOrder(order._id)}
+                                title="Delete Order"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="7" className="no-orders-row">
+                          <p>No orders found matching your search criteria</p>
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="7" className="no-results">
-                        No orders found matching your search criteria
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

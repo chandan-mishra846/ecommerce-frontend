@@ -209,77 +209,95 @@ function AdminProducts() {
             </div>
           ) : (
             <div className="products-table-container">
-              <table className="products-table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Price</th>
-                    <th>Category</th>
-                    <th>Stock</th>
-                    <th>Seller</th>
-                    <th>Rating</th>
-                    <th>Added On</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.length > 0 ? (
-                    filteredProducts.map(product => (
-                      <tr key={product._id}>
-                        <td className="product-info">
-                          <img 
-                            src={
-                              (product.images && product.images.length > 0)
-                                ? (product.images[0].url || product.images[0])
-                                : (product.image && product.image.length > 0)
-                                ? (product.image[0].url || product.image[0])
-                                : '/images/products/backpack.jpg'
-                            }
-                            alt={product.name} 
-                            className="product-thumbnail"
-                            onError={(e) => {
-                              e.target.src = '/images/products/backpack.jpg';
-                            }}
-                          />
-                          <span>{product.name}</span>
-                        </td>
-                        <td>${product.price.toFixed(2)}</td>
-                        <td>{product.category}</td>
-                        <td className={`stock ${product.stock === 0 ? 'out-of-stock' : product.stock < 10 ? 'low-stock' : ''}`}>
-                          {product.stock}
-                        </td>
-                        <td>{product.seller || (product.user ? product.user.name : 'Unknown')}</td>
-                        <td className="rating">
-                          <span className="rating-value">{product.ratings ? product.ratings.toFixed(1) : '0.0'}</span>
-                          <span className="review-count">({product.numOfReviews || 0} reviews)</span>
-                        </td>
-                        <td>{formatDate(product.createdAt)}</td>
-                        <td className="actions">
-                          <Link to={`/product/${product._id}`} className="view-btn" title="View Product">
-                            <VisibilityIcon />
-                          </Link>
-                          <Link to={`/admin/product/update/${product._id}`} className="edit-btn" title="Edit Product">
-                            <EditIcon />
-                          </Link>
-                          <button 
-                            className="delete-btn"
-                            onClick={() => handleDeleteProduct(product._id)}
-                            title="Delete Product"
-                          >
-                            <DeleteIcon />
-                          </button>
+              <div className="products-header">
+                <div className="products-count">
+                  <h3>All Products ({filteredProducts.length})</h3>
+                </div>
+              </div>
+              
+              <div className="table-wrapper">
+                <table className="products-table">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Category</th>
+                      <th>Price</th>
+                      <th>Stock</th>
+                      <th>Rating</th>
+                      <th>Seller</th>
+                      <th>Date Added</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredProducts.length > 0 ? (
+                      filteredProducts.map(product => (
+                        <tr key={product._id} className="product-row">
+                          <td className="product-info">
+                            <img 
+                              src={
+                                (product.images && product.images.length > 0)
+                                  ? (product.images[0].url || product.images[0])
+                                  : (product.image && product.image.length > 0)
+                                  ? (product.image[0].url || product.image[0])
+                                  : '/images/products/backpack.jpg'
+                              }
+                              alt={product.name} 
+                              className="product-thumbnail"
+                              onError={(e) => {
+                                e.target.src = '/images/products/backpack.jpg';
+                              }}
+                            />
+                            <div className="product-details-table">
+                              <h4 className="product-name-table">{product.name}</h4>
+                              <span className="product-id">ID: {product._id.slice(-6)}</span>
+                            </div>
+                          </td>
+                          <td className="product-category-cell">{product.category}</td>
+                          <td className="product-price-cell">₹{product.price.toFixed(2)}</td>
+                          <td className="product-stock-cell">
+                            <span className={`stock-badge-table ${product.stock === 0 ? 'out-of-stock' : product.stock < 10 ? 'low-stock' : 'in-stock'}`}>
+                              {product.stock}
+                            </span>
+                          </td>
+                          <td className="product-rating-cell">
+                            <div className="rating">
+                              <span className="rating-value">⭐ {product.ratings ? product.ratings.toFixed(1) : '0.0'}</span>
+                              <span className="review-count">({product.numOfReviews || 0} reviews)</span>
+                            </div>
+                          </td>
+                          <td className="product-seller-cell">
+                            {product.seller || (product.user ? product.user.name : 'Unknown')}
+                          </td>
+                          <td className="product-date-cell">
+                            {formatDate(product.createdAt)}
+                          </td>
+                          <td className="product-actions-cell">
+                            <div className="actions">
+                              <Link to={`/admin/product/update/${product._id}`} className="action-btn-table edit-btn" title="Edit Product">
+                                Update
+                              </Link>
+                              <button 
+                                className="action-btn-table delete-btn" 
+                                onClick={() => handleDeleteProduct(product._id)}
+                                title="Delete Product"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="8" className="no-products-row">
+                          <p>No products match your current filters.</p>
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="8" className="no-results">
-                        No products found matching your search criteria
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

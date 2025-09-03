@@ -28,6 +28,33 @@
   gap: 1rem;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.refresh-btn {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .time-range-selector label {
   font-weight: 500;
   color: #555;
@@ -230,6 +257,16 @@
   align-items: center;
 }
 
+.pie-chart-svg {
+  flex-shrink: 0;
+}
+
+.pie-chart-svg svg {
+  max-width: 200px;
+  height: auto;
+  transform: rotate(-90deg);
+}
+
 .pie-chart {
   width: 200px;
   height: 200px;
@@ -279,6 +316,14 @@
 .legend-percentage {
   font-size: 0.9rem;
   color: #777;
+}
+
+.legend-total {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eee;
+  font-size: 0.9rem;
+  color: #333;
 }
 
 .top-items-table {

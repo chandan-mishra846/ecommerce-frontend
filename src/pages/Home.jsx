@@ -19,9 +19,27 @@ function Home() {
   const dispatch = useDispatch();
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Calculate totalPages based on fetched data
   const totalPages = Math.ceil(productCount / resultPerPage);
+
+  // Handle scroll to top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   // console.log('Home component rendered', { loading, error, products, productCount, totalPages }); // Temporarily disable this log to reduce console noise
 
@@ -75,6 +93,18 @@ function Home() {
               )}
             </div>
           </div>
+          
+          {/* Scroll to Top Button */}
+          {showScrollTop && (
+            <button 
+              className="scroll-to-top"
+              onClick={scrollToTop}
+              aria-label="Scroll to top"
+            >
+              ↑
+            </button>
+          )}
+          
           <Footer />
         </>
       )}

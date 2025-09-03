@@ -6,7 +6,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PaymentMethodSelector from '../components/PaymentMethodSelector';
 import { fetchCart, removeFromCartAPI } from '../features/user/userSlice';
-import '../pageStyles/Checkout.css';
+import '../pageStyles/CheckoutClean.css';
 import '../componentStyles/StripePayment.css';
 
 function Checkout() {
@@ -17,8 +17,8 @@ function Checkout() {
   const { user, isAuthenticated, cart } = useSelector(state => state.user);
   const { selectedItems } = location.state || { selectedItems: [] };
   
-  const [currentStep, setCurrentStep] = useState(1);
   const [processing, setProcessing] = useState(false);
+  const [shippingComplete, setShippingComplete] = useState(false);
   
   const [shippingInfo, setShippingInfo] = useState({
     address: '',
@@ -50,12 +50,20 @@ function Checkout() {
     setShippingInfo(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleContinueToPayment = () => {
-    if (!shippingInfo.address || !shippingInfo.city || !shippingInfo.state || shippingInfo.pinCode.length !== 6 || shippingInfo.phoneNo.length !== 10) {
-      alert('Please fill in all required shipping information');
-      return;
+  const validateShipping = () => {
+    return shippingInfo.address && 
+           shippingInfo.city && 
+           shippingInfo.state && 
+           shippingInfo.pinCode.length === 6 && 
+           shippingInfo.phoneNo.length === 10;
+  };
+
+  const handleShippingComplete = () => {
+    if (validateShipping()) {
+      setShippingComplete(true);
+    } else {
+      alert('Please fill in all required shipping information correctly');
     }
-    setCurrentStep(2);
   };
 
   const handlePaymentSuccess = async (data) => {
@@ -88,60 +96,118 @@ function Checkout() {
       <Navbar />
       
       <div className="checkout-container">
-        {/* Progress Steps */}
-        <div className="checkout-progress">
-          <div className={`progress-step ${currentStep >= 1 ? 'active' : ''}`}>
-            <div className="progress-step-circle">1</div>
-            <span className="progress-step-label">Shipping</span>
-          </div>
-          <div className={`progress-step ${currentStep >= 2 ? 'active' : ''}`}>
-            <div className="progress-step-circle">2</div>
-            <span className="progress-step-label">Payment</span>
-          </div>
+        {/* Header */}
+        <div className="checkout-header">
+          <h1 className="checkout-title">Complete Your Purchase</h1>
+          <p className="checkout-subtitle">Secure checkout powered by advanced encryption</p>
         </div>
 
         <div className="checkout-content">
-          <div className="checkout-main">
-            {currentStep === 1 && (
-              <div className="shipping-section">
-                <h2>Shipping Information</h2>
-                <form className="shipping-form">
-                  <div className="form-group">
-                    <label>Address *</label>
-                    <textarea name="address" value={shippingInfo.address} onChange={handleInputChange} rows="3" placeholder="Enter your complete address" />
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>City *</label>
-                      <input name="city" value={shippingInfo.city} onChange={handleInputChange} placeholder="Enter city" />
-                    </div>
-                    <div className="form-group">
-                      <label>State *</label>
-                      <input name="state" value={shippingInfo.state} onChange={handleInputChange} placeholder="Enter state" />
-                    </div>
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>PIN Code *</label>
-                      <input name="pinCode" value={shippingInfo.pinCode} onChange={handleInputChange} maxLength="6" placeholder="6-digit PIN code" />
-                    </div>
-                    <div className="form-group">
-                      <label>Country</label>
-                      <input name="country" value={shippingInfo.country} disabled />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label>Phone Number *</label>
-                    <input name="phoneNo" value={shippingInfo.phoneNo} onChange={handleInputChange} maxLength="10" placeholder="10-digit phone number" />
-                  </div>
-                  <button type="button" className="continue-btn" onClick={handleContinueToPayment}>Continue to Payment</button>
-                </form>
+          {/* Shipping and Payment in one view */}
+          <div className="combined-sections">
+            
+            {/* Shipping Section */}
+            <div className={`shipping-section ${shippingComplete ? 'completed' : ''}`}>
+              <div className="section-header">
+                <div className="section-number">1</div>
+                <div className="section-info">
+                  <h2>Shipping Information</h2>
+                  <p>Where should we send your order?</p>
+                </div>
+                {shippingComplete && <div className="section-status">✓</div>}
               </div>
-            )}
+              
+              <form className="shipping-form">
+                <div className="form-group">
+                  <label>Complete Address *</label>
+                  <textarea 
+                    name="address" 
+                    value={shippingInfo.address} 
+                    onChange={handleInputChange} 
+                    rows="3" 
+                    placeholder="House/Flat number, Street, Area, Landmark" 
+                    disabled={shippingComplete}
+                  />
+                </div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>City *</label>
+                    <input 
+                      name="city" 
+                      value={shippingInfo.city} 
+                      onChange={handleInputChange} 
+                      placeholder="Enter city" 
+                      disabled={shippingComplete}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>State *</label>
+                    <input 
+                      name="state" 
+                      value={shippingInfo.state} 
+                      onChange={handleInputChange} 
+                      placeholder="Enter state" 
+                      disabled={shippingComplete}
+                    />
+                  </div>
+                </div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>PIN Code *</label>
+                    <input 
+                      name="pinCode" 
+                      value={shippingInfo.pinCode} 
+                      onChange={handleInputChange} 
+                      maxLength="6" 
+                      placeholder="6-digit PIN" 
+                      disabled={shippingComplete}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Country</label>
+                    <input name="country" value={shippingInfo.country} disabled />
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label>Phone Number *</label>
+                  <input 
+                    name="phoneNo" 
+                    value={shippingInfo.phoneNo} 
+                    onChange={handleInputChange} 
+                    maxLength="10" 
+                    placeholder="10-digit mobile number" 
+                    disabled={shippingComplete}
+                  />
+                </div>
+                
+                <div className="shipping-buttons">
+                  {!shippingComplete ? (
+                    <button type="button" className="section-btn" onClick={handleShippingComplete}>
+                      Confirm Shipping Details
+                    </button>
+                  ) : (
+                    <button type="button" className="edit-btn" onClick={() => setShippingComplete(false)}>
+                      Edit Shipping Details
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
 
-            {currentStep === 2 && (
-              <div className="payment-section">
-                <h2>Payment</h2>
+            {/* Payment Section */}
+            <div className={`payment-section ${shippingComplete ? 'enabled' : 'disabled'}`}>
+              <div className="section-header">
+                <div className="section-number">2</div>
+                <div className="section-info">
+                  <h2>Payment Method</h2>
+                  <p>Choose how you'd like to pay</p>
+                </div>
+              </div>
+              
+              {shippingComplete ? (
                 <PaymentMethodSelector
                   orderInfo={{
                     orderId: `temp-order-${Date.now()}`,
@@ -163,37 +229,13 @@ function Checkout() {
                   onPaymentSuccess={handlePaymentSuccess}
                   onPaymentError={err => alert(err)}
                 />
-                <div className="payment-actions">
-                  <button className="back-btn" onClick={() => setCurrentStep(1)}>Back to Shipping</button>
+              ) : (
+                <div className="payment-disabled">
+                  <p>📦 Complete shipping information first</p>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Order Summary */}
-          <aside className="checkout-sidebar">
-            <div className="order-summary">
-              <h3>Order Summary</h3>
-              <div className="order-items">
-                {checkoutItems.map(item => (
-                  <div key={item._id} className="order-item">
-                    <img src={item.product?.image?.[0]?.url || item.image} alt={item.name} />
-                    <div>
-                      <h4>{item.product?.name || item.name}</h4>
-                      <span>₹{item.price} × {item.quantity}</span>
-                    </div>
-                    <strong>₹{(item.price * item.quantity).toFixed(2)}</strong>
-                  </div>
-                ))}
-              </div>
-              <div className="order-totals">
-                <div><span>Subtotal:</span><span>₹{subtotal.toFixed(2)}</span></div>
-                <div><span>Tax (18%):</span><span>₹{tax.toFixed(2)}</span></div>
-                <div><span>Shipping:</span><span>₹{shipping.toFixed(2)}</span></div>
-                <div className="total-final"><span>Total:</span><span>₹{total.toFixed(2)}</span></div>
-              </div>
+              )}
             </div>
-          </aside>
+          </div>
         </div>
       </div>
 

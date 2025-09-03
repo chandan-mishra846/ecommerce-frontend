@@ -13,7 +13,7 @@ import NoProducts from '../components/NoProducts';
 import Pagination from '../components/pagination';
 
 function Products() {
-  const { loading, error, products, resultPerPage, productCount } = useSelector(
+  const { loading, error, products, resultPerPage, productCount, allCategories } = useSelector(
     (state) => state.product
   );
   const location = useLocation();
@@ -22,14 +22,14 @@ function Products() {
 
   const searchParams = new URLSearchParams(location.search);
   const keyword = searchParams.get('keyword')?.toLowerCase() || '';
-  const category = searchParams.get('category')?.toLowerCase() || '';
+  const category = searchParams.get('category') || '';
   const pageFromURL = parseInt(searchParams.get('page'), 10) || 1;
 
   const [currentPage, setCurrentPage] = useState(pageFromURL);
 
   useEffect(() => {
-    dispatch(getProduct({ keyword, page: currentPage }));
-  }, [dispatch, keyword, currentPage]);
+    dispatch(getProduct({ keyword, page: currentPage, category }));
+  }, [dispatch, keyword, currentPage, category]);
 
   useEffect(() => {
     if (error) {
@@ -53,19 +53,13 @@ function Products() {
 
   const totalPages = Math.ceil(productCount / resultPerPage);
 
-  // ✅ Filter based on description and category
-  const filteredProducts = products.filter((product) => {
-    const matchDescription = keyword
-      ? product.description?.toLowerCase().includes(keyword)
-      : true;
-    const matchCategory = category
-      ? product.category?.toLowerCase() === category
-      : true;
-    return matchDescription && matchCategory;
-  });
-
-  // ✅ Get unique categories from product list
-  const allCategories = [...new Set(products.map((p) => p.category))];
+  // ✅ Since backend now handles category filtering, we don't need frontend filtering for category
+  // Only keep keyword filtering for client-side search within fetched results
+  const filteredProducts = keyword
+    ? products.filter((product) =>
+        product.description?.toLowerCase().includes(keyword)
+      )
+    : products;
 
   const handleCategoryClick = (cat) => {
     const newSearchParams = new URLSearchParams(location.search);
@@ -100,8 +94,8 @@ function Products() {
                 {allCategories.map((cat) => (
                   <li
                     key={cat}
-                    className={category === cat.toLowerCase() ? 'active' : ''}
-                    onClick={() => handleCategoryClick(cat.toLowerCase())}
+                    className={category === cat ? 'active' : ''}
+                    onClick={() => handleCategoryClick(cat)}
                   >
                     {cat}
                   </li>
@@ -111,6 +105,12 @@ function Products() {
 
             {/* Products Display */}
             <div className="products-section">
+              {/* Products Header */}
+              <div className="products-header">
+                <h1>Discover Amazing Products</h1>
+                <p>Find the perfect items from our curated collection</p>
+              </div>
+
               {filteredProducts.length > 0 ? (
                 <div className="products-product-container">
                   {filteredProducts.map((product) => (

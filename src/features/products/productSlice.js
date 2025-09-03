@@ -4,11 +4,17 @@ import axios from '../../utils/axios';
 // Fetch All Products
 export const getProduct = createAsyncThunk(
   'product/getProduct',
-  async ({ keyword ,page=1}, { rejectWithValue }) => {
+  async ({ keyword, page=1, category }, { rejectWithValue }) => {
     try {
-      const link = keyword
-        ? `/api/v1/products?keyword=${encodeURIComponent(keyword)}&page=${page}`
-        : `/api/v1/products?page=${page}`; // ✅ fixed encodeURIComponent typo
+      let link = `/api/v1/products?page=${page}`;
+      
+      if (keyword) {
+        link += `&keyword=${encodeURIComponent(keyword)}`;
+      }
+      
+      if (category) {
+        link += `&category=${encodeURIComponent(category)}`;
+      }
 
       console.log('Making API call to:', link);
       const { data } = await axios.get(link, { withCredentials: true });
@@ -72,7 +78,8 @@ const productSlice = createSlice({
     error: null,
     product: null,
     resultPerPage:4,
-    totalPage:0
+    totalPage:0,
+    allCategories: []
   },
   reducers: {
     removeErrors: (state) => {
@@ -92,6 +99,7 @@ const productSlice = createSlice({
         state.products = action.payload.products;
         state.productCount = action.payload.productCount;
         state.resultPerPage = action.payload.resultPerPage;
+        state.allCategories = action.payload.allCategories || [];
         state.totalPage = action.payload.totalPage;
       })
       .addCase(getProduct.rejected, (state, action) => {

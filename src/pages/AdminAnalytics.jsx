@@ -48,46 +48,89 @@ function AdminAnalytics() {
     );
   };
 
-  // Simple pie chart component
+  // Simple pie chart component with SVG for better compatibility
   const PieChart = ({ data, total }) => {
     if (!data || data.length === 0 || !total) return null;
     
-    let startAngle = 0;
+    // Define distinct colors for each category
+    const colors = [
+      '#4f46e5', // Blue
+      '#f59e0b', // Yellow/Orange
+      '#10b981', // Green
+      '#06b6d4', // Cyan
+      '#8b5cf6', // Purple
+      '#f97316', // Orange
+      '#ef4444', // Red
+      '#84cc16', // Lime
+      '#ec4899', // Pink
+      '#6b7280'  // Gray
+    ];
+    
+    const size = 200;
+    const center = size / 2;
+    const radius = 80;
+    let cumulativeAngle = 0;
     
     return (
       <div className="pie-chart-container">
-        <div className="pie-chart">
-          {data.map((item, index) => {
-            const percentage = (item.count / total) * 100;
-            const degrees = (percentage / 100) * 360;
-            const oldStartAngle = startAngle;
-            startAngle += degrees;
-            
-            return (
-              <div 
-                key={index}
-                className="pie-segment"
-                style={{
-                  '--start-angle': `${oldStartAngle}deg`,
-                  '--end-angle': `${startAngle}deg`,
-                  '--color': `hsl(${index * 60}, 70%, 60%)`,
-                }}
-              ></div>
-            );
-          })}
+        <div className="pie-chart-svg">
+          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+            {data.map((item, index) => {
+              const percentage = (item.count / total) * 100;
+              const angle = (percentage / 100) * 360;
+              const startAngle = cumulativeAngle;
+              const endAngle = cumulativeAngle + angle;
+              
+              // Convert to radians for calculations
+              const startAngleRad = (startAngle * Math.PI) / 180;
+              const endAngleRad = (endAngle * Math.PI) / 180;
+              
+              // Calculate coordinates
+              const x1 = center + radius * Math.cos(startAngleRad);
+              const y1 = center + radius * Math.sin(startAngleRad);
+              const x2 = center + radius * Math.cos(endAngleRad);
+              const y2 = center + radius * Math.sin(endAngleRad);
+              
+              // Large arc flag
+              const largeArcFlag = angle > 180 ? 1 : 0;
+              
+              // Create path
+              const pathData = [
+                `M ${center} ${center}`, // Move to center
+                `L ${x1} ${y1}`, // Line to start point
+                `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`, // Arc
+                'Z' // Close path
+              ].join(' ');
+              
+              cumulativeAngle += angle;
+              
+              return (
+                <path
+                  key={index}
+                  d={pathData}
+                  fill={colors[index % colors.length]}
+                  stroke="white"
+                  strokeWidth="2"
+                />
+              );
+            })}
+          </svg>
         </div>
         <div className="pie-legend">
           {data.map((item, index) => (
             <div key={index} className="legend-item">
               <div 
                 className="legend-color" 
-                style={{ backgroundColor: `hsl(${index * 60}, 70%, 60%)` }}
+                style={{ backgroundColor: colors[index % colors.length] }}
               ></div>
               <div className="legend-label">{item.name}</div>
               <div className="legend-value">{item.count}</div>
               <div className="legend-percentage">({((item.count / total) * 100).toFixed(1)}%)</div>
             </div>
           ))}
+          <div className="legend-total">
+            <strong>Total: {data.reduce((sum, item) => sum + item.count, 0)} (100%)</strong>
+          </div>
         </div>
       </div>
     );
@@ -95,16 +138,25 @@ function AdminAnalytics() {
 
   // Format numbers with commas
   const formatNumber = (num) => {
-    return num?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || "0";
+    if (num === null || num === undefined) return "0";
+    return num.toLocaleString();
   };
 
   // Format currency
   const formatCurrency = (num) => {
+    if (num === null || num === undefined) return "$0.00";
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(num || 0);
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(num);
+  };
+
+  // Format percentage
+  const formatPercentage = (num) => {
+    if (num === null || num === undefined) return "0%";
+    return `${num >= 0 ? '+' : ''}${num.toFixed(1)}%`;
   };
 
   const renderOverviewTab = () => {
@@ -118,7 +170,7 @@ function AdminAnalytics() {
             <div className="metric">
               <span className="value">{formatCurrency(analyticsData.revenueData.total)}</span>
               <span className={`change ${analyticsData.revenueData.change >= 0 ? 'positive' : 'negative'}`}>
-                {analyticsData.revenueData.change >= 0 ? '+' : ''}{analyticsData.revenueData.change}%
+                {formatPercentage(analyticsData.revenueData.change)}
               </span>
             </div>
             <div className="chart-container">
@@ -136,7 +188,7 @@ function AdminAnalytics() {
             <div className="metric">
               <span className="value">{formatNumber(analyticsData.ordersData.total)}</span>
               <span className={`change ${analyticsData.ordersData.change >= 0 ? 'positive' : 'negative'}`}>
-                {analyticsData.ordersData.change >= 0 ? '+' : ''}{analyticsData.ordersData.change}%
+                {formatPercentage(analyticsData.ordersData.change)}
               </span>
             </div>
             <div className="chart-container">
@@ -193,10 +245,10 @@ function AdminAnalytics() {
           </div>
           
           <div className="analytics-card product-categories">
-            <h3>Product Categories</h3>
+            <h3>Top Product Categories</h3>
             <PieChart 
               data={analyticsData.productsData.topCategories} 
-              total={analyticsData.productsData.total} 
+              total={analyticsData.productsData.topCategories.reduce((sum, item) => sum + item.count, 0)} 
             />
           </div>
           
@@ -253,10 +305,10 @@ function AdminAnalytics() {
         
         <div className="analytics-row">
           <div className="analytics-card product-categories wide">
-            <h3>Product Categories</h3>
+            <h3>Top Product Categories</h3>
             <PieChart 
               data={analyticsData.productsData.topCategories} 
-              total={analyticsData.productsData.total} 
+              total={analyticsData.productsData.topCategories.reduce((sum, item) => sum + item.count, 0)} 
             />
           </div>
         </div>
@@ -460,18 +512,27 @@ function AdminAnalytics() {
               <h1>Analytics Dashboard</h1>
               <p>Track performance metrics and business insights</p>
             </div>
-            <div className="time-range-selector">
-              <label>Time Range:</label>
-              <select
-                value={timeRange}
-                onChange={(e) => setTimeRange(e.target.value)}
+            <div className="header-controls">
+              <div className="time-range-selector">
+                <label>Time Range:</label>
+                <select
+                  value={timeRange}
+                  onChange={(e) => setTimeRange(e.target.value)}
+                >
+                  <option value="daily">Last 24 Hours</option>
+                  <option value="weekly">Last 7 Days</option>
+                  <option value="monthly">Last 30 Days</option>
+                  <option value="yearly">This Year</option>
+                  <option value="all">All Time</option>
+                </select>
+              </div>
+              <button 
+                className="refresh-btn"
+                onClick={() => dispatch(fetchDashboardAnalytics())}
+                disabled={loading}
               >
-                <option value="daily">Last 24 Hours</option>
-                <option value="weekly">Last 7 Days</option>
-                <option value="monthly">Last 30 Days</option>
-                <option value="yearly">This Year</option>
-                <option value="all">All Time</option>
-              </select>
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </button>
             </div>
           </div>
 

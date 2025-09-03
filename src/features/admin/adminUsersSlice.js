@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8002/api/v1';
+const BASE_URL = 'http://localhost:8003/api/v1';
 
 // Get all users (admin)
 export const getAllUsers = createAsyncThunk(

@@ -42,6 +42,8 @@ import ResetPassword from './User/resetPassword'; // Corrected capitalization
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
+import About from './pages/About';
+import Contact from './pages/Contact';
 
 
 function App() {
@@ -61,6 +63,8 @@ function App() {
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:keyword" element={<Products />} />
+        <Route path="/about-us" element={<About />} />
+        <Route path="/contact-us" element={<Contact />} />
         <Route path="/register" element={<Register />} />
         <Route path="/register/admin" element={<AdminRegister />} />
         <Route path="/login" element={<Login />} />

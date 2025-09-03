@@ -8,6 +8,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import '../componentStyles/Navbar.css';
 import '../pageStyles/Search.css';
 import { useSelector } from 'react-redux';
+import UserDashboard from '../User/UserDashboard';
 
 
 function Navbar() {
@@ -17,7 +18,7 @@ function Navbar() {
 
   const toggelSearch=()=>setIsSearchOpen(!isSearchOpen);
   const toggleMenu = () => setIsMenuOpen(!isMenuOpne);
-  const {isAuthenticated, cartItems} = useSelector(state=>state.user)
+  const {isAuthenticated, cartItems, user} = useSelector(state=>state.user)
   const navigate = useNavigate();
   const handleSearchSubmit=(e)=>{
     e.preventDefault();
@@ -74,6 +75,10 @@ function Navbar() {
                { !isAuthenticated &&<Link to='/register' className='register-link'>
                 <PersonAddIcon className = 'icon'/>
                 </Link>}
+                
+                {/* User Dashboard Component - Shows when authenticated */}
+                {isAuthenticated && user && <UserDashboard user={user} />}
+                
                 <div className='navbar-hamburger' onClick={toggleMenu}>
                   { isMenuOpne?  <CloseIcon className = 'icon'/>:<MenuIcon className='icon' />   } 
                 </div>
