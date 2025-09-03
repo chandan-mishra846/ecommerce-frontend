@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // Create axios instance with default config
 const instance = axios.create({
-    // We don't need baseURL because we're using Vite's proxy
+    // Use environment variable for production, fallback to proxy for development
+    baseURL: import.meta.env.VITE_BACKEND_URL || '',
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json'

@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8003/api/v1/analytics';
+const BASE_URL = `${import.meta.env.VITE_BACKEND_URL || ''}/api/v1/analytics`;
 
 // Async thunk to fetch dashboard analytics
 export const fetchDashboardAnalytics = createAsyncThunk(
