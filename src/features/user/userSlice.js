@@ -203,6 +203,7 @@ const userSlice = createSlice({
   initialState: {
     user: null,
     loading: false,
+    cartLoading: false,
     error: null,
     success: false,
     isAuthenticated: false,
@@ -249,6 +250,11 @@ const userSlice = createSlice({
       state.loading = false;
       state.user = action.payload.user;
       state.isAuthenticated = true;
+      
+      // Fetch cart after successful user load
+      if (action.payload.user) {
+        // This will be handled by the fetchCart thunk in useEffect of components
+      }
     });
     builder.addCase(loadUser.rejected, (state, action) => {
       state.loading = false;
@@ -323,12 +329,12 @@ const userSlice = createSlice({
     
     // Cart Operations
     builder.addCase(fetchCart.pending, (state) => { 
-      state.loading = true; 
+      state.cartLoading = true; 
       state.error = null; 
     });
     builder.addCase(fetchCart.fulfilled, (state, action) => {
       console.log("userSlice: fetchCart.fulfilled - Payload:", action.payload);
-      state.loading = false;
+      state.cartLoading = false;
       
       // Check if cart data actually changed to prevent unnecessary updates
       const newCartData = action.payload.cart && action.payload.cart.items ? 
@@ -354,17 +360,17 @@ const userSlice = createSlice({
     });
     builder.addCase(fetchCart.rejected, (state, action) => {
       console.error("userSlice: fetchCart.rejected - Error:", action.payload);
-      state.loading = false;
+      state.cartLoading = false;
       // Only set error if it's not a duplicate request
       if (action.payload !== 'Request already in progress') {
         state.error = action.payload?.message || action.payload || 'Failed to fetch cart';
       }
     });
 
-    builder.addCase(addToCartAPI.pending, (state) => { state.loading = true; state.error = null; });
+    builder.addCase(addToCartAPI.pending, (state) => { state.cartLoading = true; state.error = null; });
     builder.addCase(addToCartAPI.fulfilled, (state, action) => {
       console.log("userSlice: addToCartAPI.fulfilled - Payload:", action.payload);
-      state.loading = false;
+      state.cartLoading = false;
       if (action.payload.cart && action.payload.cart.items) {
         state.cart = action.payload.cart.items.map(item => ({
           _id: item._id,
@@ -386,14 +392,14 @@ const userSlice = createSlice({
     });
     builder.addCase(addToCartAPI.rejected, (state, action) => {
       console.error("userSlice: addToCartAPI.rejected - Error:", action.payload);
-      state.loading = false;
+      state.cartLoading = false;
       state.error = action.payload?.message || action.payload || 'Failed to add item to cart';
     });
 
-    builder.addCase(updateCartItemAPI.pending, (state) => { state.loading = true; state.error = null; });
+    builder.addCase(updateCartItemAPI.pending, (state) => { state.cartLoading = true; state.error = null; });
     builder.addCase(updateCartItemAPI.fulfilled, (state, action) => {
       console.log("userSlice: updateCartItemAPI.fulfilled - Payload:", action.payload);
-      state.loading = false;
+      state.cartLoading = false;
       if (action.payload.cart && action.payload.cart.items) {
         state.cart = action.payload.cart.items.map(item => ({
           _id: item._id,
@@ -415,14 +421,14 @@ const userSlice = createSlice({
     });
     builder.addCase(updateCartItemAPI.rejected, (state, action) => {
       console.error("userSlice: updateCartItemAPI.rejected - Error:", action.payload);
-      state.loading = false;
+      state.cartLoading = false;
       state.error = action.payload?.message || action.payload || 'Failed to update cart item';
     });
 
-    builder.addCase(removeFromCartAPI.pending, (state) => { state.loading = true; state.error = null; });
+    builder.addCase(removeFromCartAPI.pending, (state) => { state.cartLoading = true; state.error = null; });
     builder.addCase(removeFromCartAPI.fulfilled, (state, action) => {
       console.log("userSlice: removeFromCartAPI.fulfilled - Payload:", action.payload);
-      state.loading = false;
+      state.cartLoading = false;
       if (action.payload.cart && action.payload.cart.items) {
         state.cart = action.payload.cart.items.map(item => ({
           _id: item._id,
@@ -444,14 +450,14 @@ const userSlice = createSlice({
     });
     builder.addCase(removeFromCartAPI.rejected, (state, action) => {
       console.error("userSlice: removeFromCartAPI.rejected - Error:", action.payload);
-      state.loading = false;
+      state.cartLoading = false;
       state.error = action.payload?.message || action.payload || 'Failed to remove item from cart';
     });
 
-    builder.addCase(clearCartAPI.pending, (state) => { state.loading = true; state.error = null; });
+    builder.addCase(clearCartAPI.pending, (state) => { state.cartLoading = true; state.error = null; });
     builder.addCase(clearCartAPI.fulfilled, (state, action) => {
       console.log("userSlice: clearCartAPI.fulfilled - Payload:", action.payload);
-      state.loading = false;
+      state.cartLoading = false;
       state.cart = [];
       state.cartItems = 0;
       state.cartTotal = 0;
@@ -459,7 +465,7 @@ const userSlice = createSlice({
     });
     builder.addCase(clearCartAPI.rejected, (state, action) => {
       console.error("userSlice: clearCartAPI.rejected - Error:", action.payload);
-      state.loading = false;
+      state.cartLoading = false;
       state.error = action.payload?.message || action.payload || 'Failed to clear cart';
     });
 

@@ -36,7 +36,7 @@ function Register() {
   });
 
   const [avatar, setAvatar] = useState('');
-  const [avatarPreview, setAvatarPreview] = useState('./images/jony-dep.png');
+  const [avatarPreview, setAvatarPreview] = useState('./images/profile.png');
   const [documents, setDocuments] = useState({
     businessLicense: null,
     gstCertificate: null,

@@ -65,7 +65,7 @@ function UserDashboard({ user }) {
         <div className="profile-header" onClick={toggleMeu}>
           {/* Use optional chaining for avatar url */}
           <img
-            src={user?.avatar?.url || '/images/jony-dep.png'}
+            src={user?.avatar?.url || '/images/profile.png'}
             alt="User Avatar"
             className="profile-avatar"
             />

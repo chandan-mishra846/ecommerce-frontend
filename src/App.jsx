@@ -12,7 +12,7 @@ import Register from './User/Register';
 import AdminRegister from './User/AdminRegister';
 import UpdateProfile from './User/UpdateProfile';
 import UserDashboard from './User/UserDashboard';
-import Login from './User/Login';
+import SimpleLogin from './pages/SimpleLogin';
 import Profile from './User/Profile';
 import SellerDashboard from './pages/SellerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -34,7 +34,7 @@ import SellerOrderHistory from './pages/SellerOrderHistory';
 import TotalProfit from './pages/TotalProfit';
 
 // Corrected import path for loadUser
-import { loadUser } from './features/user/userSlice'; 
+import { loadUser, fetchCart } from './features/user/userSlice'; 
 import ProtectedRoute from './components/ProtectedRoute';
 import NavbarSelector from './components/NavbarSelector';
 import UpdatePassword from './User/UpdatePassword';
@@ -48,12 +48,20 @@ import Contact from './pages/Contact';
 
 
 function App() {
-  const { isAuthenticated, user } = useSelector(state => state.user);
+  const { isAuthenticated, user, loading } = useSelector(state => state.user);
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(loadUser());
   }, [dispatch]);
+
+  // Load cart when user becomes authenticated and loading is complete
+  useEffect(() => {
+    if (isAuthenticated && user && !loading) {
+      console.log('Loading cart for authenticated user:', user.email);
+      dispatch(fetchCart());
+    }
+  }, [dispatch, isAuthenticated, user, loading]);
 
   return (
     <Router>
@@ -68,7 +76,8 @@ function App() {
         <Route path="/contact-us" element={<Contact />} />
         <Route path="/register" element={<Register />} />
         <Route path="/register/admin" element={<AdminRegister />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<SimpleLogin />} />
+        <Route path="/unified-login" element={<SimpleLogin />} />
         <Route
           path="/profile"
           element={

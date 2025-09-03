@@ -919,3 +919,79 @@
     margin: 0;
   }
 }
+
+/* ================================================================
+   CRITICAL INPUT VISIBILITY FIX - FOR CHECKOUTCLEAN.CSS 
+   ================================================================ */
+.checkout-container .form-group input,
+.checkout-container input[type="text"],
+.checkout-container input[type="email"],
+.checkout-container input[type="tel"],
+.checkout-container input[type="number"],
+.checkout-container textarea,
+.checkout-container select,
+html body div.checkout-container input,
+html body div.checkout-container textarea,
+html body div input[name="address"],
+html body div input[name="city"], 
+html body div input[name="state"],
+html body div input[name="pinCode"],
+html body div input[name="phoneNo"],
+html body div textarea[name="address"],
+.checkout-container form input,
+.checkout-container form textarea,
+form.shipping-form input,
+form.shipping-form textarea,
+div.form-group input,
+div.form-group textarea {
+  color: #000000 !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  -webkit-text-fill-color: #000000 !important;
+  -moz-text-fill-color: #000000 !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+  text-shadow: 1px 1px 0px #ffffff !important;
+  caret-color: #ff0000 !important;
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+  background-image: none !important;
+  outline: 2px solid #000000 !important;
+}
+
+/* Force visible text for all input states */
+.checkout-container .form-group input:focus,
+.checkout-container .form-group input:active,
+.checkout-container .form-group input:hover,
+.checkout-container input:focus,
+.checkout-container input:active,
+.checkout-container input:hover,
+.checkout-container textarea:focus,
+.checkout-container textarea:active,
+.checkout-container textarea:hover {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  -webkit-text-fill-color: #000000 !important;
+  opacity: 1 !important;
+}
+
+/* Override webkit autofill completely */
+.checkout-container input:-webkit-autofill,
+.checkout-container input:-webkit-autofill:hover,
+.checkout-container input:-webkit-autofill:focus,
+.checkout-container input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #000000 !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Ultimate override for any conflicting styles */
+input:not([type="submit"]):not([type="button"]):not([type="reset"]) {
+  -webkit-text-fill-color: #000000 !important;
+  color: #000000 !important;
+  background: #ffffff !important;
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+}

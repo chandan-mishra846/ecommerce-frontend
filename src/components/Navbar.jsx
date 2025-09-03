@@ -72,9 +72,13 @@ function Navbar() {
 
                 </div>
 
-               { !isAuthenticated &&<Link to='/register' className='register-link'>
-                <PersonAddIcon className = 'icon'/>
-                </Link>}
+               { !isAuthenticated && (
+                 <div className="auth-links">
+                   <Link to='/register' className='register-link'>
+                     <PersonAddIcon className = 'icon'/>
+                   </Link>
+                 </div>
+               )}
                 
                 {/* User Dashboard Component - Shows when authenticated */}
                 {isAuthenticated && user && <UserDashboard user={user} />}
