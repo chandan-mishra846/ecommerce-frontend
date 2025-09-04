@@ -136,6 +136,9 @@ function AddProduct() {
       };
 
       // Use axios instance for consistent configuration
+      console.log('Backend URL:', import.meta.env.VITE_BACKEND_URL);
+      console.log('Making API call to:', '/api/v1/seller/product/new');
+      
       const response = await axios.post('/api/v1/seller/product/new', productData, {
         headers: {
           'Content-Type': 'application/json',

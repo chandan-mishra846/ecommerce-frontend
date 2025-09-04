@@ -13,8 +13,11 @@ const instance = axios.create({
 // Add a request interceptor
 instance.interceptors.request.use(
     (config) => {
-        // Log outgoing requests
-        console.log(`[API Request] ${config.method.toUpperCase()} ${config.url}`);
+        // Log outgoing requests with full URL
+        const fullUrl = config.baseURL + config.url;
+        console.log(`[API Request] ${config.method.toUpperCase()} ${fullUrl}`);
+        console.log(`[API Request] Base URL: ${config.baseURL}`);
+        console.log(`[API Request] Relative URL: ${config.url}`);
         
         // For multipart/form-data, let the browser set the Content-Type
         if (config.data instanceof FormData) {
