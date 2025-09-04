@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import axios from '../utils/axios';
 
 // Material UI Icons
 import HistoryIcon from '@mui/icons-material/History';
@@ -28,23 +29,15 @@ function SellerOrderHistory() {
   const fetchOrderHistory = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/v1/seller/orders/history', {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.get('/api/v1/seller/orders/history');
 
       console.log(`Fetch order history response status: ${response.status}`);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Fetch order history error:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.data.success) {
+        setOrders(response.data.orders || []);
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch order history');
       }
-
-      const result = await response.json();
       console.log('Fetched order history:', result);
 
       if (result.success) {

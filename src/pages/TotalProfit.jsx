@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import axios from '../utils/axios';
 import Loader from '../components/Loader';
 
 // Material UI Icons
@@ -31,19 +32,12 @@ function TotalProfit() {
   const fetchProfitData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/v1/seller/profit?period=${selectedPeriod}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.get(`/api/v1/seller/profit?period=${selectedPeriod}`);
 
-      const result = await response.json();
-      console.log('Profit data response:', result);
+      console.log('Profit data response:', response.data);
 
-      if (result.success) {
-        setProfitData(result.data || {
+      if (response.data.success) {
+        setProfitData(response.data.data || {
           totalRevenue: 0,
           totalOrders: 0,
           averageOrderValue: 0,
@@ -54,8 +48,8 @@ function TotalProfit() {
           previousAOV: 0
         });
       } else {
-        console.error('Profit data error:', result.message);
-        toast.error(result.message || 'Failed to fetch profit data');
+        console.error('Profit data error:', response.data.message);
+        toast.error(response.data.message || 'Failed to fetch profit data');
       }
     } catch (error) {
       console.error('Error fetching profit data:', error);

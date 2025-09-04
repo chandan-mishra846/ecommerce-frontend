@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import axios from '../utils/axios';
 import '../pageStyles/OutOfStockProducts.css';
 
 // Material UI Icons
@@ -26,17 +27,12 @@ function OutOfStockProducts() {
 
   const fetchOutOfStockProducts = async () => {
     try {
-      const response = await fetch('/api/v1/seller/products/out-of-stock', {
-        method: 'GET',
-        credentials: 'include',
-      });
+      const response = await axios.get('/api/v1/seller/products/out-of-stock');
 
-      const result = await response.json();
-
-      if (result.success) {
-        setProducts(result.products || []);
+      if (response.data.success) {
+        setProducts(response.data.products || []);
       } else {
-        toast.error(result.message || 'Failed to fetch out of stock products');
+        toast.error(response.data.message || 'Failed to fetch out of stock products');
       }
     } catch (error) {
       console.error('Error fetching out of stock products:', error);
@@ -53,22 +49,15 @@ function OutOfStockProducts() {
     setRestockingProduct(productId);
     
     try {
-      const response = await fetch(`/api/v1/seller/product/${productId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ stock: parseInt(newStock) }),
+      const response = await axios.put(`/api/v1/seller/product/${productId}`, {
+        stock: parseInt(newStock)
       });
 
-      const result = await response.json();
-
-      if (result.success) {
+      if (response.data.success) {
         toast.success('Product restocked successfully!');
         fetchOutOfStockProducts(); // Refresh the list
       } else {
-        toast.error(result.message || 'Failed to restock product');
+        toast.error(response.data.message || 'Failed to restock product');
       }
     } catch (error) {
       console.error('Error restocking product:', error);
