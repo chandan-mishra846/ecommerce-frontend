@@ -6,7 +6,7 @@ import {
   useStripe,
   useElements
 } from '@stripe/react-stripe-js';
-import axios from 'axios';
+import axios from '../utils/axios';
 import { toast } from 'react-toastify';
 
 // Initialize Stripe
