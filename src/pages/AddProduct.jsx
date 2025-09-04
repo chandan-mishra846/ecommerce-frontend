@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import axios from '../utils/axios';
 import '../pageStyles/AddProduct.css';
 
 function AddProduct() {
@@ -134,16 +135,14 @@ function AddProduct() {
         images: images
       };
 
-      const response = await fetch('/api/v1/seller/product/new', {
-        method: 'POST',
+      // Use axios instance for consistent configuration
+      const response = await axios.post('/api/v1/seller/product/new', productData, {
         headers: {
           'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(productData)
+        }
       });
 
-      const result = await response.json();
+      const result = response.data;
 
       if (result.success) {
         toast.success('Product added successfully!');
