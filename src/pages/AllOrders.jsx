@@ -60,17 +60,9 @@ function AllOrders() {
       });
 
       console.log(`Response status: ${response.status}`);
+      console.log('Update result:', response.data);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Response error:', errorText);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
-      }
-
-      const result = await response.json();
-      console.log('Update result:', result);
-
-      if (result.success) {
+      if (response.data.success) {
         toast.success('Order status updated successfully!');
         // Update the local state immediately for better UX
         setOrders(prevOrders =>
@@ -83,7 +75,7 @@ function AllOrders() {
         // Also refresh from server to ensure consistency
         fetchOrders();
       } else {
-        toast.error(result.message || 'Failed to update order status');
+        toast.error(response.data.message || 'Failed to update order status');
       }
     } catch (error) {
       console.error('Error updating order status:', error);

@@ -35,15 +35,9 @@ function SellerOrderHistory() {
 
       if (response.data.success) {
         setOrders(response.data.orders || []);
+        console.log('Fetched order history:', response.data);
       } else {
         throw new Error(response.data.message || 'Failed to fetch order history');
-      }
-      console.log('Fetched order history:', result);
-
-      if (result.success) {
-        setOrders(result.orders || []);
-      } else {
-        toast.error(result.message || 'Failed to fetch order history');
       }
     } catch (error) {
       console.error('Error fetching order history:', error);
