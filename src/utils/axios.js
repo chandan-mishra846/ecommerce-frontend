@@ -1,14 +1,33 @@
 import axios from 'axios';
 
 // Create axios instance with default config
+const getBaseURL = () => {
+    // Always prefer environment variable
+    if (import.meta.env.VITE_BACKEND_URL) {
+        return import.meta.env.VITE_BACKEND_URL;
+    }
+    
+    // Fallback for production
+    if (import.meta.env.PROD) {
+        return 'https://ecommerce-backend-72js.onrender.com';
+    }
+    
+    // Development mode - use proxy
+    return '';
+};
+
 const instance = axios.create({
-    // Use environment variable for production, fallback to proxy for development
-    baseURL: import.meta.env.VITE_BACKEND_URL || '',
+    baseURL: getBaseURL(),
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json'
     }
 });
+
+// Log the configuration for debugging
+console.log('[Axios Config] Environment:', import.meta.env.MODE);
+console.log('[Axios Config] VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL);
+console.log('[Axios Config] Base URL set to:', getBaseURL());
 
 // Add a request interceptor
 instance.interceptors.request.use(
