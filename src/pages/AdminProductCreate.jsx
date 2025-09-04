@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import axios from '../utils/axios';
 import AdminNavbar from '../components/AdminNavbar';
 import '../AdminStyles/AdminProductCreate.css';
 import '../AdminStyles/CreateProduct.css';
@@ -141,19 +142,11 @@ function AdminProductCreate() {
       console.log('Admin creating product with same structure as seller:', productData);
 
       // Use admin endpoint but same structure as seller
-      const response = await fetch('/api/v1/admin/products/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(productData)
-      });
+      const response = await axios.post('/api/v1/admin/products/create', productData);
 
-      const result = await response.json();
-      console.log('Admin product creation response:', result);
+      console.log('Admin product creation response:', response.data);
 
-      if (result.success) {
+      if (response.data.success) {
         toast.success('Product added successfully!');
         // Reset form - exactly like seller
         setFormData({
@@ -171,7 +164,7 @@ function AdminProductCreate() {
           navigate('/admin/products');
         }, 2000);
       } else {
-        toast.error(result.message || 'Failed to add product');
+        toast.error(response.data.message || 'Failed to add product');
       }
     } catch (error) {
       console.error('Error adding product:', error);

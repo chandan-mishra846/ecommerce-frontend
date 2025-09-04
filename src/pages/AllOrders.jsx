@@ -36,16 +36,10 @@ function AllOrders() {
       console.log(`Fetch orders response status: ${response.status}`);
 
       if (response.data.success) {
-        setOrders(response.data.orders);
+        setOrders(response.data.orders || []);
+        console.log('Fetched orders:', response.data);
       } else {
         throw new Error(response.data.message || 'Failed to fetch orders');
-      }
-      console.log('Fetched orders:', result);
-
-      if (result.success) {
-        setOrders(result.orders || []);
-      } else {
-        toast.error(result.message || 'Failed to fetch orders');
       }
     } catch (error) {
       console.error('Error fetching orders:', error);

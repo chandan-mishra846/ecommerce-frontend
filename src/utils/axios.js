@@ -24,19 +24,23 @@ const instance = axios.create({
     }
 });
 
-// Log the configuration for debugging
-console.log('[Axios Config] Environment:', import.meta.env.MODE);
-console.log('[Axios Config] VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL);
-console.log('[Axios Config] Base URL set to:', getBaseURL());
+// Log the configuration for debugging (only in development)
+if (import.meta.env.DEV) {
+  console.log('[Axios Config] Environment:', import.meta.env.MODE);
+  console.log('[Axios Config] VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL);
+  console.log('[Axios Config] Base URL set to:', getBaseURL());
+}
 
 // Add a request interceptor
 instance.interceptors.request.use(
     (config) => {
-        // Log outgoing requests with full URL
-        const fullUrl = config.baseURL + config.url;
-        console.log(`[API Request] ${config.method.toUpperCase()} ${fullUrl}`);
-        console.log(`[API Request] Base URL: ${config.baseURL}`);
-        console.log(`[API Request] Relative URL: ${config.url}`);
+        // Log outgoing requests with full URL (only in development)
+        if (import.meta.env.DEV) {
+          const fullUrl = config.baseURL + config.url;
+          console.log(`[API Request] ${config.method.toUpperCase()} ${fullUrl}`);
+          console.log(`[API Request] Base URL: ${config.baseURL}`);
+          console.log(`[API Request] Relative URL: ${config.url}`);
+        }
         
         // For multipart/form-data, let the browser set the Content-Type
         if (config.data instanceof FormData) {
@@ -53,7 +57,9 @@ instance.interceptors.request.use(
 // Add a response interceptor
 instance.interceptors.response.use(
     (response) => {
-        console.log(`[API Response] ${response.config.url} - Status: ${response.status}`);
+        if (import.meta.env.DEV) {
+          console.log(`[API Response] ${response.config.url} - Status: ${response.status}`);
+        }
         return response;
     },
     (error) => {
