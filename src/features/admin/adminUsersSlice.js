@@ -66,7 +66,37 @@ export const updateUserRole = createAsyncThunk(
   'adminUsers/updateUserRole',
   async ({ id, role }, { rejectWithValue }) => {
     try {
-      const { data } = await axios.put(`/api/v1/admin/user/${id}`, { role });
+      let updateData = { role };
+      
+      // If changing to seller role, provide required seller info
+      if (role === 'seller') {
+        updateData.sellerInfo = {
+          companyName: 'Default Company',
+          businessType: 'Individual',
+          gstNumber: 'TEMP_GST_NUMBER',
+          panNumber: 'TEMP_PAN_NUMBER',
+          address: {
+            street: 'Default Street',
+            city: 'Default City', 
+            state: 'Default State',
+            pincode: '000000',
+            country: 'India'
+          },
+          contact: {
+            phone: '0000000000'
+          },
+          bankDetails: {
+            accountHolderName: 'Default Holder',
+            accountNumber: '0000000000000000',
+            bankName: 'Default Bank',
+            ifscCode: 'TEMP0000000',
+            branchName: 'Default Branch',
+            accountType: 'Savings'
+          }
+        };
+      }
+      
+      const { data } = await axios.put(`/api/v1/admin/user/${id}`, updateData);
       return data.user;
     } catch (error) {
       return rejectWithValue(
