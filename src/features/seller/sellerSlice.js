@@ -19,7 +19,7 @@ export const createSellerProduct = createAsyncThunk(
   async (productData, { rejectWithValue }) => {
     try {
       const config = { headers: { 'Content-Type': 'application/json' } };
-      const { data } = await axios.post('/api/v1/seller/products', productData, config);
+      const { data } = await axios.post('/api/v1/seller/product/new', productData, config);
       return data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
