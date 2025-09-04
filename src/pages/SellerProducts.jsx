@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import axios from '../utils/axios';
 import '../pageStyles/SellerProducts.css';
 
 // Material UI Icons
@@ -26,17 +27,12 @@ function SellerProducts() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/v1/seller/products', {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setProducts(result.products);
+      const response = await axios.get('/api/v1/seller/products');
+      
+      if (response.data.success) {
+        setProducts(response.data.products);
       } else {
-        toast.error(result.message || 'Failed to fetch products');
+        toast.error(response.data.message || 'Failed to fetch products');
       }
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -50,18 +46,13 @@ function SellerProducts() {
       setDeleteLoading(productId);
       
       try {
-        const response = await fetch(`/api/v1/seller/products/${productId}`, {
-          method: 'DELETE',
-          credentials: 'include',
-        });
+        const response = await axios.delete(`/api/v1/seller/products/${productId}`);
 
-        const result = await response.json();
-
-        if (result.success) {
+        if (response.data.success) {
           toast.success('Product deleted successfully');
           setProducts(products.filter(product => product._id !== productId));
         } else {
-          toast.error(result.message || 'Failed to delete product');
+          toast.error(response.data.message || 'Failed to delete product');
         }
       } catch (error) {
         console.error('Error deleting product:', error);

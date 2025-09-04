@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import axios from '../utils/axios';
 import '../pageStyles/AllOrders.css';
 
 // Material UI Icons
@@ -30,23 +31,15 @@ function AllOrders() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/v1/seller/orders', {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.get('/api/v1/seller/orders');
 
       console.log(`Fetch orders response status: ${response.status}`);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Fetch orders error:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.data.success) {
+        setOrders(response.data.orders);
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch orders');
       }
-
-      const result = await response.json();
       console.log('Fetched orders:', result);
 
       if (result.success) {
@@ -68,13 +61,8 @@ function AllOrders() {
     try {
       console.log(`Updating order ${orderId} to status: ${newStatus}`);
       
-      const response = await fetch(`/api/v1/seller/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ status: newStatus }),
+      const response = await axios.put(`/api/v1/seller/orders/${orderId}/status`, {
+        status: newStatus
       });
 
       console.log(`Response status: ${response.status}`);
